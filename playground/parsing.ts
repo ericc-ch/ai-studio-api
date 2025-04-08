@@ -1,8 +1,23 @@
 import { JSDOM } from "jsdom"
 import fs from "node:fs/promises"
 
-const html = await fs.readFile("./playground/chat-container.html", "utf8")
-const dom = new JSDOM(html)
-const document = dom.window.document
+const chatHtml = await fs.readFile("./playground/chat-container.html", "utf8")
+const {
+  window: { document: chatDocument },
+} = new JSDOM(chatHtml)
 
-const turns = document.querySelectorAll("ms-chat-turn")
+const turns = chatDocument.querySelectorAll("ms-chat-turn")
+
+// --- The Logic ---
+// 1. Select the potential label element using the CSS selector
+const stopLabelElement = chatDocument.querySelector(
+  "div.button-wrapper run-button button span.label",
+)
+
+// 2. Check if the element was found AND if its text content is exactly 'Stop'
+const hasStopButton =
+  stopLabelElement !== null && stopLabelElement.textContent?.trim() === "Stop"
+// --- End Logic ---
+
+// Output the boolean flag
+console.log(hasStopButton) // Output: true (based on your provided snippet)

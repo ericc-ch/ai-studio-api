@@ -23,19 +23,19 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "bun run --watch ./src/main.ts",
-    "knip": "knip-bun",
+    "dev": "tsx watch ./src/main.ts",
+    "knip": "knip",
     "lint": "eslint .",
-    "prepack": "bun run build",
+    "prepack": "pnpm run build",
     "prepare": "simple-git-hooks",
-    "release": "bumpp && bun publish --access public",
+    "release": "bumpp && pnpm publish --access public",
     "start": "NODE_ENV=production bun run ./src/main.ts"
   },
   "simple-git-hooks": {
-    "pre-commit": "bunx lint-staged"
+    "pre-commit": "pnpm exec lint-staged"
   },
   "lint-staged": {
-    "*": "bunx eslint --fix"
+    "*": "pnpm exec eslint --fix"
   },
   "dependencies": {
     "citty": "^0.1.6",
@@ -43,12 +43,16 @@
     "fetch-event-stream": "^0.1.5",
     "gpt-tokenizer": "^2.9.0",
     "hono": "^4.7.5",
+    "jsdom": "^26.0.0",
     "playwright": "^1.51.1",
-    "srvx": "^0.2.7"
+    "srvx": "^0.2.7",
+    "tinyexec": "^1.0.1",
+    "tsx": "^4.19.3"
   },
   "devDependencies": {
-    "@echristian/eslint-config": "^0.0.39",
+    "@echristian/eslint-config": "^0.0.40",
     "@types/bun": "^1.2.8",
+    "@types/jsdom": "^21.1.7",
     "bumpp": "^10.1.0",
     "eslint": "^9.24.0",
     "jiti": "^2.4.2",
@@ -57,5 +61,6 @@
     "prettier-plugin-packagejson": "^2.5.10",
     "simple-git-hooks": "^2.12.1",
     "tsup": "^8.4.0"
-  }
+  },
+  "packageManager": "pnpm@10.7.1"
 }

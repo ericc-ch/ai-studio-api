@@ -1,19 +1,19 @@
 import fs from "node:fs/promises"
 import { chromium } from "playwright"
+import { expect } from "playwright/test"
 import { x } from "tinyexec"
 
 x("chromium", ["--remote-debugging-port=9222"])
 
-await new Promise((resolve) => setTimeout(resolve, 5000))
+await new Promise((resolve) => setTimeout(resolve, 2000))
 
 const browser = await chromium.connectOverCDP("http://localhost:9222", {})
 
 const page = await browser.contexts()[0].newPage()
 
-await page.goto(
-  "https://aistudio.google.com/prompts/1Yb5n51NV3KvvIwzlV27P5o-F5m_lw6Y0",
-  { waitUntil: "networkidle" },
-)
+await page.goto("https://aistudio.google.com/prompts/new_chat", {
+  waitUntil: "networkidle",
+})
 
 const content = await page.evaluate(() => document.body.innerHTML)
 
@@ -57,8 +57,6 @@ const sampleMessages: Array<Message> = [
   },
 ]
 
-const inputSelector = "ms-prompt-input-wrapper textarea"
-
 const writeUserMessage = async (message: Message) => {
   const textarea = page.getByPlaceholder("Type something")
   await textarea.fill(message.content)
@@ -67,16 +65,55 @@ const writeUserMessage = async (message: Message) => {
   await page.keyboard.down("Alt")
   await page.keyboard.press("Enter")
   await page.keyboard.up("Alt")
-  await page.waitForSelector(`ms-chat-turn.${message.role}`)
 }
 
 const writeSystemMessage = async (message: Message) => {
-  const collapsible = page
-    .getByRole("button")
-    .filter({ hasText: "System Instructions" })
+  const collapsibleSelector = "ms-system-instructions > div"
+  const collapsible = page.locator(collapsibleSelector)
 
-  await collapsible.click()
+  try {
+    await expect(collapsible).not.toHaveClass(/(^|\s)collapsed(\s|$)/, {
+      timeout: 1000,
+    })
+  } catch {
+    const collapseButton = page.locator(
+      'button[aria-label="Collapse all System Instructions"]',
+    )
+
+    await collapseButton.click()
+  }
+
+  const textarea = page.getByPlaceholder(
+    "Optional tone and style instructions for the model",
+  )
+  await textarea.fill(message.content)
 }
 
-await writeSystemMessage(sampleMessages[0])
-await writeUserMessage(sampleMessages[0])
+const clearChat = async () => {
+  const button = page.locator('button[aria-label="Clear chat"]')
+  if (await button.isDisabled()) return
+  await button.click()
+
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
+  const continueButton = page
+    .getByRole("button")
+    .filter({ hasText: "Continue" })
+
+  await continueButton.click()
+}
+
+await clearChat()
+
+for (const message of sampleMessages) {
+  if (message.role === "system") {
+    await writeSystemMessage(message)
+    continue
+  }
+
+  if (message.role === "user") {
+    console.log("Writing user message", message)
+    await writeUserMessage(message)
+    continue
+  }
+}

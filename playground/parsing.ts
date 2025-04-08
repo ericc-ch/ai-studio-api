@@ -1,4 +1,5 @@
 import { JSDOM } from "jsdom"
+import fs from "node:fs"
 
 // Define the structure for OpenAI compatible messages
 interface OpenAIMessage {
@@ -12,6 +13,7 @@ interface ParseResult {
   isLoading: boolean
 }
 
+// eslint-disable-next-line complexity
 function parseAIChat(htmlContent: string): ParseResult {
   const dom = new JSDOM(htmlContent)
   const document = dom.window.document
@@ -22,6 +24,8 @@ function parseAIChat(htmlContent: string): ParseResult {
   // --- Parse Chat Content ---
   // Select all chat turn containers
   const chatTurns = document.querySelectorAll("ms-chat-turn")
+
+  console.log("Chat Turns:", chatTurns.length)
 
   for (const turn of chatTurns) {
     let role: OpenAIMessage["role"] | null = null
@@ -99,11 +103,7 @@ function parseAIChat(htmlContent: string): ParseResult {
 }
 
 // --- Example Usage ---
-const html = `
---- START OF FILE ai-studio.html ---
-[... your full HTML content here ...]
---- END OF FILE ai-studio.html ---
-` // Replace with the actual HTML content from the file
+const html = fs.readFileSync("./playground/ai-studio.html", "utf8")
 
 // Remove the start/end markers if they exist in the string
 const cleanHtml = html

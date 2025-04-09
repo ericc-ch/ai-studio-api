@@ -1,4 +1,3 @@
-import fs from "node:fs/promises"
 import { chromium } from "playwright"
 import { expect } from "playwright/test"
 import { x } from "tinyexec"
@@ -15,9 +14,9 @@ await page.goto("https://aistudio.google.com/prompts/new_chat", {
   waitUntil: "networkidle",
 })
 
-const content = await page.evaluate(() => document.body.innerHTML)
+// const content = await page.evaluate(() => document.body.innerHTML)
 
-await fs.writeFile("./playground/chat-container.html", content)
+// await fs.writeFile("./playground/chat-container.html", content)
 
 interface Message {
   role: "system" | "user" | "assistant"

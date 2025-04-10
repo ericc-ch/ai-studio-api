@@ -2,6 +2,8 @@ import { chromium } from "playwright"
 import { expect } from "playwright/test"
 import { x } from "tinyexec"
 
+import { buildPrompt } from "./prompt"
+
 x("chromium", ["--remote-debugging-port=9222"])
 
 await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -49,21 +51,19 @@ const sampleMessages: Array<Message> = [
     role: "user",
     content: "Where is it located?",
   },
-  {
-    role: "assistant",
-    content:
-      "Mount Everest is located in the Mahalangur Himalayas range, straddling the border between Nepal and the Tibet Autonomous Region of China.",
-  },
 ]
 
 const writeUserMessage = async (message: Message) => {
-  const textarea = page.getByPlaceholder("Type something")
+  // const textarea = page.getByPlaceholder("Type something")
+  const textarea = page.locator(
+    'textarea[aria-label="Type something or pick one from prompt gallery"]',
+  )
   await textarea.fill(message.content)
   // await page.focus(inputSelector)
   // await page.keyboard.insertText(message.content)
-  await page.keyboard.down("Alt")
+  await page.keyboard.down("Control")
   await page.keyboard.press("Enter")
-  await page.keyboard.up("Alt")
+  await page.keyboard.up("Control")
 }
 
 const writeSystemMessage = async (message: Message) => {
@@ -102,17 +102,27 @@ const clearChat = async () => {
   await continueButton.click()
 }
 
-await clearChat()
+// await clearChat()
 
-for (const message of sampleMessages) {
-  if (message.role === "system") {
-    await writeSystemMessage(message)
-    continue
-  }
+const prompt = buildPrompt(sampleMessages)
 
-  if (message.role === "user") {
-    console.log("Writing user message", message)
-    await writeUserMessage(message)
-    continue
-  }
-}
+const temperatureSelector =
+  'div[data-test-id="temperatureSliderContainer"] input[type="number"]'
+
+const tempElement = page.locator(temperatureSelector)
+await tempElement.fill("0.5")
+
+await writeUserMessage({ role: "user", content: prompt })
+
+// for (const message of sampleMessages) {
+//   if (message.role === "system") {
+//     await writeSystemMessage(message)
+//     continue
+//   }
+
+//   if (message.role === "user") {
+//     console.log("Writing user message", message)
+//     await writeUserMessage(message)
+//     continue
+//   }
+// }

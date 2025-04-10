@@ -42,25 +42,25 @@
     "consola": "^3.4.2",
     "fetch-event-stream": "^0.1.5",
     "gpt-tokenizer": "^2.9.0",
-    "hono": "^4.7.5",
+    "hono": "^4.7.6",
     "jsdom": "^26.0.0",
     "playwright": "^1.51.1",
-    "srvx": "^0.2.7",
+    "srvx": "^0.2.8",
     "tinyexec": "^1.0.1",
     "tsx": "^4.19.3"
   },
   "devDependencies": {
     "@echristian/eslint-config": "^0.0.40",
-    "@types/bun": "^1.2.8",
     "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.14.0",
     "bumpp": "^10.1.0",
     "eslint": "^9.24.0",
     "jiti": "^2.4.2",
-    "knip": "^5.47.0",
+    "knip": "^5.50.2",
     "lint-staged": "^15.5.0",
     "prettier-plugin-packagejson": "^2.5.10",
     "simple-git-hooks": "^2.12.1",
     "tsup": "^8.4.0"
   },
-  "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
+  "packageManager": "pnpm@10.8.0"
 }

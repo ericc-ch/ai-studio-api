@@ -1,4 +1,4 @@
-import { chromium } from "playwright"
+import { chromium, type Locator } from "playwright"
 import { expect } from "playwright/test"
 import { x } from "tinyexec"
 
@@ -49,7 +49,8 @@ const sampleMessages: Array<Message> = [
   },
   {
     role: "user",
-    content: "Where is it located?",
+    content:
+      "Where is it located? Like the full address. Is there a story behind it?",
   },
 ]
 
@@ -64,6 +65,15 @@ const writeUserMessage = async (message: Message) => {
   await page.keyboard.down("Control")
   await page.keyboard.press("Enter")
   await page.keyboard.up("Control")
+}
+
+const locatorVisible = async (locator: Locator) => {
+  try {
+    await expect(locator).toBeVisible({ timeout: 1000 })
+    return true
+  } catch {
+    return false
+  }
 }
 
 const writeSystemMessage = async (message: Message) => {
@@ -113,6 +123,15 @@ const tempElement = page.locator(temperatureSelector)
 await tempElement.fill("0.5")
 
 await writeUserMessage({ role: "user", content: prompt })
+
+await new Promise((resolve) => setTimeout(resolve, 1000))
+
+const stopButton = page.getByRole("button").filter({ hasText: "Stop" })
+
+while (await locatorVisible(stopButton)) {
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+  console.log("Stop button is visible")
+}
 
 // for (const message of sampleMessages) {
 //   if (message.role === "system") {

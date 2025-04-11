@@ -15,7 +15,8 @@ function formatMessages(messages: Array<Message>): string {
   return systemMessages + otherMessages
 }
 
-export const buildPrompt = (messages: Array<Message>) => `
+export const buildPrompt = (messages: Array<Message>) =>
+  `
 You are an AI assistant.
 You have been given a chat history formatted as follows:
 
@@ -23,12 +24,6 @@ SYSTEM: [system instructions for the assistant]
 USER: [user message]
 ASSISTANT: [assistant message]
 ... and so on.
-
-Here is the chat history:
-
----
-${formatMessages(messages)}
----
 
 Your task is to respond to the very last message in this history that is from the "USER".
 Please provide your response as if you are continuing the conversation.
@@ -40,5 +35,10 @@ For example, if the last user message is "What is the capital of France?", your 
 "The capital of France is Paris."
 
 Do not write it like this:
-"ASSISTANT: The capital of France is Paris."  
-`
+"ASSISTANT: The capital of France is Paris."
+
+Here is the chat history:
+---
+${formatMessages(messages)}
+---
+`.trim()

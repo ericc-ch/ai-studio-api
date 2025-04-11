@@ -1,3 +1,4 @@
+import { JSDOM } from "jsdom"
 import { chromium, type Locator } from "playwright"
 import { expect } from "playwright/test"
 import { x } from "tinyexec"
@@ -133,8 +134,40 @@ while (await locatorVisible(stopButton)) {
   console.log("Stop button is visible")
 }
 
-const chatContainer = page.locator("ms-chat-session")
-const chatContainerHtml = await chatContainer.innerHTML()
+console.log(
+  "waiting for 5 seconds because sometimes the button updates earlier",
+)
+await new Promise((resolve) => setTimeout(resolve, 5000))
+
+const pageHTML: string = await page.evaluate(() => document.body.innerHTML)
+const dom = new JSDOM(pageHTML)
+const document = dom.window.document
+
+const chatContainer = document.querySelector("ms-chat-session")
+
+if (!chatContainer) {
+  console.error("No chat container found")
+  process.exit(1)
+}
+
+const chatTurns = chatContainer.querySelectorAll("ms-chat-turn")
+const lastChatTurn = Array.from(chatTurns).at(-1)
+
+if (!lastChatTurn) {
+  console.error("No last chat turn found")
+  process.exit(1)
+}
+
+const textChunk = lastChatTurn.querySelector("ms-text-chunk")
+
+if (!textChunk) {
+  console.error("No text chunk found")
+  process.exit(1)
+}
+
+const text = textChunk.textContent
+
+console.log(text)
 
 // for (const message of sampleMessages) {
 //   if (message.role === "system") {

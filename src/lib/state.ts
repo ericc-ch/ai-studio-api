@@ -1,12 +1,11 @@
+import type { Page } from "playwright"
+
 import type { ModelsResponse } from "~/services/copilot/get-models"
 
 export interface State {
-  githubToken?: string
-  copilotToken?: string
+  page?: Page
 
-  accountType: string
   models?: ModelsResponse
-  vsCodeVersion?: string
 
   manualApprove: boolean
   rateLimitWait: boolean
@@ -17,7 +16,6 @@ export interface State {
 }
 
 export const state: State = {
-  accountType: "individual",
   manualApprove: false,
   rateLimitWait: false,
 }

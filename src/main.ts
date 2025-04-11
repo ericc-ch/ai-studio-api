@@ -2,19 +2,14 @@
 
 import { defineCommand, runMain } from "citty"
 import consola from "consola"
-import { serve, type ServerHandler } from "srvx"
 
-import { cacheModels } from "./lib/models"
-import { ensurePaths } from "./lib/paths"
+import { createPage, spawnChromium } from "./lib/browser"
 import { state } from "./lib/state"
-import { setupCopilotToken, setupGitHubToken } from "./lib/token"
-import { cacheVSCodeVersion } from "./lib/vscode-version"
-import { server } from "./server"
+import { getModels } from "./services/get-models"
 
 interface RunServerOptions {
   port: number
   verbose: boolean
-  business: boolean
   manual: boolean
   rateLimit: number | undefined
   rateLimitWait: boolean
@@ -26,28 +21,27 @@ export async function runServer(options: RunServerOptions): Promise<void> {
     consola.info("Verbose logging enabled")
   }
 
-  if (options.business) {
-    state.accountType = "business"
-    consola.info("Using business plan GitHub account")
-  }
+  await spawnChromium()
+  state.page = await createPage()
 
   state.manualApprove = options.manual
   state.rateLimitSeconds = options.rateLimit
   state.rateLimitWait = options.rateLimitWait
 
-  await ensurePaths()
-  await cacheVSCodeVersion()
-  await setupGitHubToken()
-  await setupCopilotToken()
-  await cacheModels()
+  await state.page.goto("https://aistudio.google.com/prompts/new_chat", {
+    waitUntil: "networkidle",
+  })
+
+  await getModels(state.page)
+  // await cacheModels()
 
   const serverUrl = `http://localhost:${options.port}`
   consola.box(`Server started at ${serverUrl}`)
 
-  serve({
-    fetch: server.fetch as ServerHandler,
-    port: options.port,
-  })
+  // serve({
+  //   fetch: server.fetch as ServerHandler,
+  //   port: options.port,
+  // })
 }
 
 const main = defineCommand({
@@ -63,11 +57,6 @@ const main = defineCommand({
       type: "boolean",
       default: false,
       description: "Enable verbose logging",
-    },
-    business: {
-      type: "boolean",
-      default: false,
-      description: "Use a business plan GitHub Account",
     },
     manual: {
       type: "boolean",
@@ -98,7 +87,6 @@ const main = defineCommand({
     return runServer({
       port,
       verbose: args.verbose,
-      business: args.business,
       manual: args.manual,
       rateLimit,
       rateLimitWait: Boolean(args.wait),

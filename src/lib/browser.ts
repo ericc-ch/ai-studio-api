@@ -6,7 +6,7 @@ import { sleep } from "./sleep"
 
 export const spawnChromium = async () => {
   x("chromium", ["--remote-debugging-port=9222"])
-  await sleep(10_000)
+  await sleep(5000)
 }
 
 export const createPage = async () => {

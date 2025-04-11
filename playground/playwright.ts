@@ -133,6 +133,9 @@ while (await locatorVisible(stopButton)) {
   console.log("Stop button is visible")
 }
 
+const chatContainer = page.locator("ms-chat-session")
+const chatContainerHtml = await chatContainer.innerHTML()
+
 // for (const message of sampleMessages) {
 //   if (message.role === "system") {
 //     await writeSystemMessage(message)

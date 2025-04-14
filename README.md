@@ -1,4 +1,13 @@
-# Copilot API
+# AI Studio API
+
+## Handling Messages
+
+Since Google AI Studio doesn't allow us to prefill assistant messages, there are 2 ways to do this
+
+- Use the "correct" way. We can do this by editing the studio file inside google drive. But it requires some sort of authentication or another google drive automation using playwright. Also latency is going to increase since we need to update the file in google drive first.
+- Use a hacky way. We can instead use a prompting technique that condenses down all of the message history and asks the LLM to answer as if it's continuing the conversation. This is faster and easier to implement.
+
+For now the second option is the only available implementation.
 
 ⚠️ **EDUCATIONAL PURPOSE ONLY** ⚠️
 This project is a reverse-engineered implementation of the GitHub Copilot API created for educational purposes only. It is not officially supported by GitHub and should not be used in production environments.

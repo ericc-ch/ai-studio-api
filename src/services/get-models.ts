@@ -1,6 +1,7 @@
-import type { Page } from "playwright"
+import invariant from "tiny-invariant"
 
 import { getDocument } from "~/lib/dom"
+import { state } from "~/lib/state"
 
 const parseModel = (data: string) => {
   const trimmed = data.trim()
@@ -11,7 +12,11 @@ const parseModel = (data: string) => {
   return { label, name }
 }
 
-export async function getModels(page: Page) {
+export async function getModels() {
+  const { page } = state
+
+  invariant(page, "Browser page is not initialized")
+
   const modelSelector = page.locator("ms-run-settings ms-model-selector")
   await modelSelector.click()
 

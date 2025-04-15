@@ -4,8 +4,8 @@ import { defineCommand, runMain } from "citty"
 import consola from "consola"
 
 import { createPage, spawnChromium } from "./lib/browser"
+import { cacheModels } from "./lib/models"
 import { state } from "./lib/state"
-import { getModels } from "./services/get-models"
 
 interface RunServerOptions {
   port: number
@@ -32,8 +32,7 @@ export async function runServer(options: RunServerOptions): Promise<void> {
     waitUntil: "networkidle",
   })
 
-  await getModels(state.page)
-  // await cacheModels()
+  await cacheModels()
 
   const serverUrl = `http://localhost:${options.port}`
   consola.box(`Server started at ${serverUrl}`)

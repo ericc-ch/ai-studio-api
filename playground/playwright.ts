@@ -169,6 +169,8 @@ const text = textChunk.textContent
 
 console.log(text)
 
+await clearChat()
+
 // for (const message of sampleMessages) {
 //   if (message.role === "system") {
 //     await writeSystemMessage(message)

@@ -1,11 +1,11 @@
 import type { Page } from "playwright"
 
-import type { ModelsResponse } from "~/services/copilot/get-models"
+import type { ExpectedModels } from "~/services/get-models"
 
 export interface State {
   page?: Page
 
-  models?: ModelsResponse
+  models?: ExpectedModels
 
   manualApprove: boolean
   rateLimitWait: boolean

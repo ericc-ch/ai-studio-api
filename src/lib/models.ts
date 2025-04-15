@@ -1,6 +1,6 @@
 import consola from "consola"
 
-import { getModels } from "~/services/copilot/get-models"
+import { getModels } from "~/services/get-models"
 
 import { state } from "./state"
 

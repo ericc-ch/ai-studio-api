@@ -3,7 +3,7 @@ import { chromium, type Locator } from "playwright"
 import { expect } from "playwright/test"
 import { x } from "tinyexec"
 
-import { buildPrompt } from "./prompt"
+import { buildPrompt } from "../src/lib/prompt"
 
 x("chromium", ["--remote-debugging-port=9222"])
 

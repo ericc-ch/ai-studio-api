@@ -5,7 +5,7 @@ import { state } from "~/lib/state"
 
 const parseModel = (data: string) => {
   const trimmed = data.trim()
-  const parts = trimmed.split("")
+  const parts = trimmed.split(" ")
 
   const name = parts.pop() ?? ""
   const label = parts.join(" ")
@@ -38,7 +38,22 @@ export async function getModels() {
     })),
   }
 
+  const modelOption = page.locator("mat-option").first()
+  await modelOption.click()
+
   return expected
+}
+
+export const selectModel = async (model: string) => {
+  const { page } = state
+
+  invariant(page, "Browser page is not initialized")
+
+  const modelSelector = page.locator("ms-run-settings ms-model-selector")
+  await modelSelector.click()
+
+  const modelOption = page.locator("mat-option").filter({ hasText: model })
+  await modelOption.click()
 }
 
 interface Model {

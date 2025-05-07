@@ -28,9 +28,7 @@ export async function runServer(options: RunServerOptions): Promise<void> {
   state.rateLimitSeconds = options.rateLimit
   state.rateLimitWait = options.rateLimitWait
 
-  await state.page.goto("https://aistudio.google.com/prompts/new_chat", {
-    waitUntil: "networkidle",
-  })
+  await state.page.goto("https://aistudio.google.com/prompts/new_chat")
 
   await cacheModels()
 

@@ -17,6 +17,8 @@ await page.goto("https://aistudio.google.com/prompts/new_chat", {
   waitUntil: "networkidle",
 })
 
+process.exit()
+
 // const content = await page.evaluate(() => document.body.innerHTML)
 
 // await fs.writeFile("./playground/chat-container.html", content)

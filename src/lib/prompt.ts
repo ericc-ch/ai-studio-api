@@ -37,7 +37,7 @@ For example, if the last user message is "What is the capital of France?", your 
 Do not write it like this:
 "ASSISTANT: The capital of France is Paris."
 
-Here is the chat history:
+The following is the chat history:
 ---
 ${formatMessages(messages)}
 ---

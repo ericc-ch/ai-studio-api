@@ -1,28 +1,17 @@
 {
-  "name": "copilot-api",
-  "version": "0.0.22",
-  "description": "A wrapper around GitHub Copilot API to make it OpenAI compatible, making it usable for other tools.",
-  "keywords": [
-    "proxy",
-    "github-copilot",
-    "openai-compatible"
-  ],
-  "homepage": "https://github.com/ericc-ch/copilot-api",
-  "bugs": "https://github.com/ericc-ch/copilot-api/issues",
+  "name": "ai-studio-api",
+  "version": "0.0.0",
+  "description": "Turn Google AI Studio into OpenAI API compatible server. The stupid way.",
+  "homepage": "https://github.com/ericc-ch/ai-studio-api",
+  "bugs": "https://github.com/ericc-ch/ai-studio-api/issues",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ericc-ch/copilot-api.git"
+    "url": "git+https://github.com/ericc-ch/ai-studio-api.git"
   },
   "author": "Erick Christian <erickchristian48@gmail.com>",
   "type": "module",
-  "bin": {
-    "copilot-api": "./dist/main.js"
-  },
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "tsup",
+    "build": "bun run ./scripts/build.ts",
     "dev": "tsx watch ./src/main.ts",
     "knip": "knip",
     "lint": "eslint .",
@@ -60,7 +49,6 @@
     "lint-staged": "^15.5.2",
     "prettier-plugin-packagejson": "^2.5.11",
     "simple-git-hooks": "^2.13.0",
-    "tsup": "^8.4.0",
     "typescript": "^5.8.3"
   }
 }

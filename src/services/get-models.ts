@@ -14,7 +14,6 @@ const parseModel = (data: string) => {
 
 export async function getModels() {
   const { page } = state
-
   invariant(page, "Browser page is not initialized")
 
   const modelSelector = page.locator("ms-run-settings ms-model-selector")
@@ -46,7 +45,6 @@ export async function getModels() {
 
 export const selectModel = async (model: string) => {
   const { page } = state
-
   invariant(page, "Browser page is not initialized")
 
   const modelSelector = page.locator("ms-run-settings ms-model-selector")

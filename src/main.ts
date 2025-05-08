@@ -2,10 +2,12 @@
 
 import { defineCommand, runMain } from "citty"
 import consola from "consola"
+import { serve, type ServerHandler } from "srvx"
 
 import { createPage, spawnChromium } from "./lib/browser"
 import { cacheModels } from "./lib/models"
 import { state } from "./lib/state"
+import { server } from "./server"
 
 interface RunServerOptions {
   port: number
@@ -35,10 +37,10 @@ export async function runServer(options: RunServerOptions): Promise<void> {
   const serverUrl = `http://localhost:${options.port}`
   consola.box(`Server started at ${serverUrl}`)
 
-  // serve({
-  //   fetch: server.fetch as ServerHandler,
-  //   port: options.port,
-  // })
+  serve({
+    fetch: server.fetch as ServerHandler,
+    port: options.port,
+  })
 }
 
 const main = defineCommand({

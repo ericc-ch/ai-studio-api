@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 
 import { forwardError } from "~/lib/forward-error"
-import { getModels } from "~/services/copilot/get-models"
+import { getModels } from "~/services/get-models"
 
 export const modelRoutes = new Hono()
 

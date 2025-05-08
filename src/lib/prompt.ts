@@ -1,4 +1,4 @@
-import type { Message } from "~/services/copilot/create-chat-completions"
+import type { Message } from "~/services/create-chat-completions"
 
 function formatMessages(messages: Array<Message>): string {
   let systemMessages = ""

@@ -17,6 +17,7 @@ export const createChatCompletions = async (
 
   const formattedMessage = buildPrompt(payload.messages)
 
+  await selectModel(payload.model)
   await setTemperature(page, payload.temperature ?? 1)
   await sendMessage(page, formattedMessage)
 
@@ -36,6 +37,17 @@ export const createChatCompletions = async (
 }
 
 // Navigation / Automation helpers
+
+const selectModel = async (model: string) => {
+  const { page } = state
+  invariant(page, "Browser page is not initialized")
+
+  const modelSelector = page.locator("ms-run-settings ms-model-selector")
+  await modelSelector.click()
+
+  const modelOption = page.locator("mat-option").filter({ hasText: model })
+  await modelOption.click()
+}
 
 const sendMessage = async (page: Page, message: string) => {
   const textarea = page.locator(

@@ -43,17 +43,6 @@ export async function getModels() {
   return expected
 }
 
-export const selectModel = async (model: string) => {
-  const { page } = state
-  invariant(page, "Browser page is not initialized")
-
-  const modelSelector = page.locator("ms-run-settings ms-model-selector")
-  await modelSelector.click()
-
-  const modelOption = page.locator("mat-option").filter({ hasText: model })
-  await modelOption.click()
-}
-
 interface Model {
   id: string
   object: "model"

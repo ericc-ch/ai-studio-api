@@ -9,23 +9,15 @@ Since Google AI Studio doesn't allow us to prefill assistant messages, there are
 
 For now the second option is the only available implementation.
 
-⚠️ **EDUCATIONAL PURPOSE ONLY** ⚠️
-This project is a reverse-engineered implementation of the GitHub Copilot API created for educational purposes only. It is not officially supported by GitHub and should not be used in production environments.
-
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E519XS7W)
 
 ## Project Overview
 
-A wrapper around GitHub Copilot API to make it OpenAI compatible, making it usable for other tools like AI assistants, local interfaces, and development utilities.
-
-## Demo
-
-https://github.com/user-attachments/assets/7654b383-669d-4eb9-b23c-06d7aefee8c5
+A server that exposes Google AI Studio as an OpenAI compatible API. This allows you to use Google AI Studio with tools that expect an OpenAI-compatible interface.
 
 ## Prerequisites
 
 - Bun (>= 1.2.x)
-- GitHub account with Copilot subscription (Individual or Business)
 
 ## Installation
 
@@ -40,27 +32,13 @@ bun install
 Build image
 
 ```sh
-docker build -t copilot-api .
+docker build -t ai-studio-api .
 ```
 
 Run the container
 
 ```sh
-docker run -p 4141:4141 copilot-api
-```
-
-## Using with npx
-
-You can run the project directly using npx:
-
-```sh
-npx copilot-api@latest
-```
-
-With options:
-
-```sh
-npx copilot-api --port 8080
+docker run -p 4141:4141 ai-studio-api
 ```
 
 ## Command Line Options
@@ -71,7 +49,6 @@ The following command line options are available:
 | ------------ | -------------------------------------------- | ------- | ----- |
 | --port       | Port to listen on                            | 4141    | -p    |
 | --verbose    | Enable verbose logging                       | false   | -v    |
-| --business   | Use a business plan GitHub account           | false   | none  |
 | --manual     | Enable manual request approval               | false   | none  |
 | --rate-limit | Rate limit in seconds between requests       | none    | -r    |
 | --wait       | Wait instead of error when rate limit is hit | false   | -w    |
@@ -80,19 +57,16 @@ Example usage:
 
 ```sh
 # Run on custom port with verbose logging
-npx copilot-api@latest --port 8080 --verbose
-
-# Use with a Business GitHub account
-npx copilot-api@latest --business
+bun run dev --port 8080 --verbose
 
 # Enable manual approval for each request
-npx copilot-api@latest --manual
+bun run dev --manual
 
 # Set rate limit to 30 seconds between requests
-npx copilot-api@latest --rate-limit 30
+bun run dev --rate-limit 30
 
 # Wait instead of error when rate limit is hit
-npx copilot-api@latest --rate-limit 30 --wait
+bun run dev --rate-limit 30 --wait
 ```
 
 ## Running from Source
@@ -113,27 +87,10 @@ bun run start
 
 ## Usage Tips
 
-- Consider using free models (e.g., Gemini, Mistral, Openrouter) as the `weak-model`
-- Use architect mode sparingly
-- Disable `yes-always` in your aider configuration
-- Be mindful that Claude 3.7 thinking mode consumes more tokens
-- Enable the `--manual` flag to review and approve each request before processing
-- If you have a GitHub Business account with Copilot, use the `--business` flag
+- Enable the `--manual` flag to review and approve each request before processing.
 
 ### Manual Request Approval
 
-When using the `--manual` flag, the server will prompt you to approve each incoming request:
-
-```
-? Accept incoming request? › (y/N)
-```
+When using the `--manual` flag, the server will prompt you to approve each incoming request
 
 This helps you control usage and monitor requests in real-time.
-
-## Roadmap
-
-- [ ] Manual authentication flow
-- [x] Manual request approval system
-- [x] Rate limiting implementation
-- [x] Token counting
-- [x] Enhanced error handling and recovery

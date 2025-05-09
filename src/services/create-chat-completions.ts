@@ -17,6 +17,8 @@ export const createChatCompletions = async (
 
   const formattedMessage = buildPrompt(payload.messages)
 
+  await clearChat(page)
+
   await selectModel(payload.model)
   await setTemperature(page, payload.temperature ?? 1)
   await sendMessage(page, formattedMessage)
@@ -29,7 +31,6 @@ export const createChatCompletions = async (
   await sleep(2500)
 
   const result = await parseResult(page)
-  await clearChat(page)
 
   return payload.stream ?
       buildStreamingResponse(payload, result)

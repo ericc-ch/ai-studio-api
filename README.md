@@ -13,7 +13,7 @@ For now the second option is the only available implementation.
 
 ## Project Overview
 
-A server that exposes Google AI Studio as an OpenAI compatible API. This allows you to use Google AI Studio with tools that expect an OpenAI-compatible interface.
+A server that exposes Google AI Studio as an OpenAI compatible API. It achieves this by automating a web browser to interact with the Google AI Studio interface. This allows you to use Google AI Studio with tools that expect an OpenAI-compatible interface.
 
 ## Prerequisites
 

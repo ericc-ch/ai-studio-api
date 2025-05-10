@@ -26,7 +26,9 @@ export async function handleCompletion(c: Context) {
 
   return streamSSE(c, async (stream) => {
     for (const chunk of response) {
-      await stream.write(JSON.stringify(chunk))
+      await stream.writeSSE({
+        data: JSON.stringify(chunk),
+      })
     }
   })
 }

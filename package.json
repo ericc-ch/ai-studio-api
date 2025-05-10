@@ -13,7 +13,7 @@
   "scripts": {
     "build": "bun run ./scripts/build.ts",
     "dev": "tsx watch ./src/main.ts",
-    "knip": "knip",
+    "knip": "knip-bun",
     "lint": "eslint .",
     "prepack": "bun run build",
     "prepare": "simple-git-hooks",
@@ -29,7 +29,6 @@
   "dependencies": {
     "citty": "^0.1.6",
     "consola": "^3.4.2",
-    "fetch-event-stream": "^0.1.5",
     "hono": "^4.7.9",
     "jsdom": "^26.1.0",
     "playwright": "^1.52.0",

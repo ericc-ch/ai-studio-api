@@ -1,7 +1,6 @@
 import type { Locator, Page } from "playwright"
 
 import consola from "consola"
-import { JSDOM } from "jsdom"
 import crypto from "node:crypto"
 import { expect } from "playwright/test"
 import invariant from "tiny-invariant"
@@ -28,10 +27,7 @@ export const createChatCompletions = async (
 
   await waitForResult(page)
 
-  // Sleeping here because sometimes the stop button updates earlier
-  await sleep(2000)
-
-  const result = await parseResult(page)
+  const result = await getResult(page)
 
   return payload.stream ?
       buildStreamingResponse(payload, result)
@@ -72,31 +68,24 @@ const setTemperature = async (page: Page, temperature: number) => {
 const waitForResult = async (page: Page) => {
   const stopButton = page.getByRole("button").filter({ hasText: "Stop" })
 
+  // LMAO what is this
   while (await locatorVisible(stopButton)) {
-    await sleep(500)
     consola.debug("waitForResult: Stop button is visible")
   }
 }
 
-const parseResult = async (page: Page) => {
-  const pageHTML: string = await page.evaluate(() => document.body.innerHTML)
-  const dom = new JSDOM(pageHTML)
-  const document = dom.window.document
+const getResult = async (page: Page) => {
+  const chatTurn = page.locator("ms-chat-turn").last()
+  const turnOptions = chatTurn.locator("ms-chat-turn-options")
+  await turnOptions.click()
 
-  const chatContainer = document.querySelector("ms-chat-session")
-  invariant(chatContainer, "No chat container found")
+  const copyMarkdown = page.getByText("Copy markdown").last()
+  await copyMarkdown.click()
 
-  const chatTurns = chatContainer.querySelectorAll("ms-chat-turn")
-  const lastChatTurn = Array.from(chatTurns).at(-1)
-  invariant(lastChatTurn, "No last chat turn found")
+  const response = await page.evaluate(() => navigator.clipboard.readText())
+  invariant(response, "No response found")
 
-  const textChunk = lastChatTurn.querySelector("ms-text-chunk")
-  invariant(textChunk, "No text chunk found")
-
-  const result = textChunk.textContent
-  invariant(result, "No result found")
-
-  return result
+  return response
 }
 
 const clearChat = async (page: Page) => {
@@ -115,7 +104,7 @@ const clearChat = async (page: Page) => {
 
 const locatorVisible = async (locator: Locator) => {
   try {
-    await expect(locator).toBeVisible({ timeout: 1000 })
+    await expect(locator).toBeVisible({ timeout: 100 })
     return true
   } catch {
     return false
@@ -133,6 +122,7 @@ const buildNonStreamingResponse = (
   payload: ChatCompletionsPayload,
   result: string,
 ) => {
+  consola.debug("Building non-streaming response for result")
   const response: ChatCompletionResponse = {
     id: crypto.randomUUID(),
     object: "chat.completion",
@@ -151,6 +141,7 @@ const buildNonStreamingResponse = (
     ],
   }
 
+  consola.debug("Non-streaming response built:", response)
   return response
 }
 
@@ -158,6 +149,7 @@ const buildStreamingResponse = (
   payload: ChatCompletionsPayload,
   result: string,
 ) => {
+  consola.debug("Building streaming response for result")
   const stringChunks = fakeChunk(result)
   const randomId = crypto.randomUUID()
   const now = Date.now()
@@ -179,6 +171,7 @@ const buildStreamingResponse = (
     }),
   )
 
+  consola.debug(`Streaming response built: ${completionChunks.length} chunks`)
   return completionChunks
 }
 

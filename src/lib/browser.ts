@@ -14,6 +14,8 @@ export const createPage = async () => {
   const context = browser.contexts().at(0)
   invariant(context, "Default context not found")
 
+  await context.grantPermissions(["clipboard-read"])
+
   const page = context.pages().at(0)
   invariant(page, "Default page not found")
 

@@ -27,20 +27,6 @@ To install dependencies, run:
 bun install
 ```
 
-## Using with docker
-
-Build image
-
-```sh
-docker build -t ai-studio-api .
-```
-
-Run the container
-
-```sh
-docker run -p 4141:4141 ai-studio-api
-```
-
 ## Command Line Options
 
 The following command line options are available:

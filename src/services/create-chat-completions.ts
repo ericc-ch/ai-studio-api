@@ -1,5 +1,6 @@
 import type { Locator, Page } from "playwright"
 
+import consola from "consola"
 import { JSDOM } from "jsdom"
 import crypto from "node:crypto"
 import { expect } from "playwright/test"
@@ -23,12 +24,12 @@ export const createChatCompletions = async (
   await setTemperature(page, payload.temperature ?? 1)
   await sendMessage(page, formattedMessage)
 
-  await sleep(1000)
+  await sleep(500)
 
   await waitForResult(page)
 
   // Sleeping here because sometimes the stop button updates earlier
-  await sleep(2500)
+  await sleep(2000)
 
   const result = await parseResult(page)
 
@@ -73,7 +74,7 @@ const waitForResult = async (page: Page) => {
 
   while (await locatorVisible(stopButton)) {
     await sleep(500)
-    console.log("Stop button is visible")
+    consola.debug("waitForResult: Stop button is visible")
   }
 }
 

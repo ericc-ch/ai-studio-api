@@ -76,6 +76,7 @@ const waitForResult = async (page: Page) => {
 
 const getResult = async (page: Page) => {
   const chatTurn = page.locator("ms-chat-turn").last()
+  await chatTurn.hover()
   const turnOptions = chatTurn.locator("ms-chat-turn-options")
   await turnOptions.click()
 

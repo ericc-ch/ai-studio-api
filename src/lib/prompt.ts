@@ -20,9 +20,9 @@ export const buildPrompt = (messages: Array<Message>) =>
 You are an AI assistant.
 You have been given a chat history formatted as follows:
 
-SYSTEM: [system instructions for the assistant]
-USER: [user message]
-ASSISTANT: [assistant message]
+SYSTEM: (system instructions for the assistant)
+USER: (user message)
+ASSISTANT: (assistant message)
 ... and so on.
 
 Your task is to respond to the very last message in this history that is from the "USER".

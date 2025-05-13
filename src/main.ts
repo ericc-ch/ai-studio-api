@@ -6,6 +6,7 @@ import { serve, type ServerHandler } from "srvx"
 
 import { createPage, spawnChromium } from "./lib/browser"
 import { cacheModels } from "./lib/models"
+import { processQueue } from "./lib/queue"
 import { state } from "./lib/state"
 import { server } from "./server"
 
@@ -23,19 +24,31 @@ export async function runServer(options: RunServerOptions): Promise<void> {
     consola.info("Verbose logging enabled")
   }
 
+  consola.debug("Spawning Chromium...")
   await spawnChromium()
+
+  consola.debug("Creating new page...")
   state.page = await createPage()
 
   state.manualApprove = options.manual
-  state.rateLimitSeconds = options.rateLimit
-  state.rateLimitWait = options.rateLimitWait
+  consola.debug(`Manual approval: ${state.manualApprove}`)
 
+  state.rateLimitSeconds = options.rateLimit
+  consola.debug(`Rate limit seconds: ${state.rateLimitSeconds}`)
+
+  state.rateLimitWait = options.rateLimitWait
+  consola.debug(`Rate limit wait: ${state.rateLimitWait}`)
+
+  consola.debug("Navigating to AI Studio...")
   await state.page.goto("https://aistudio.google.com/prompts/new_chat")
 
   await cacheModels()
 
   const serverUrl = `http://localhost:${options.port}`
   consola.box(`Server started at ${serverUrl}`)
+
+  consola.debug("Starting processQueue loop in background...")
+  void processQueue()
 
   serve({
     fetch: server.fetch as ServerHandler,
@@ -77,11 +90,18 @@ const main = defineCommand({
   },
   run({ args }) {
     const rateLimitRaw = args["rate-limit"]
+    consola.debug(`Raw rate-limit arg: ${rateLimitRaw}`)
     const rateLimit =
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       rateLimitRaw === undefined ? undefined : Number.parseInt(rateLimitRaw, 10)
+    consola.debug(`Parsed rateLimit: ${rateLimit}`)
 
     const port = Number.parseInt(args.port, 10)
+    consola.debug(`Parsed port: ${port}`)
+
+    consola.debug(`Verbose arg: ${args.verbose}`)
+    consola.debug(`Manual arg: ${args.manual}`)
+    consola.debug(`Wait arg: ${args.wait}`)
 
     return runServer({
       port,

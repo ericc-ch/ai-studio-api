@@ -13,12 +13,15 @@ import {
 
 export async function handleCompletion(c: Context) {
   await checkRateLimit(state)
-
-  const payload = await c.req.json<ChatCompletionsPayload>()
-
   if (state.manualApprove) await awaitApproval()
 
-  const response = await createChatCompletions(payload)
+  const promise =
+    Promise.withResolvers<Awaited<ReturnType<typeof createChatCompletions>>>()
+  const payload = await c.req.json<ChatCompletionsPayload>()
+
+  state.requestQueue.push({ payload, promise })
+
+  const response = await promise.promise
 
   if (isNonStreaming(response)) {
     return c.json(response)

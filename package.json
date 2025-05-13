@@ -11,14 +11,14 @@
   "author": "Erick Christian <erickchristian48@gmail.com>",
   "type": "module",
   "scripts": {
-    "build": "bun run ./scripts/build.ts",
+    "build": "tsdown",
     "dev": "tsx watch ./src/main.ts",
     "knip": "knip-bun",
     "lint": "eslint .",
-    "prepack": "bun run build",
     "prepare": "simple-git-hooks",
     "release": "bumpp && pnpm publish --access public",
-    "start": "NODE_ENV=production tsx ./src/main.ts"
+    "prestart": "bun run build",
+    "start": "node ./dist/main.js"
   },
   "simple-git-hooks": {
     "pre-commit": "bunx lint-staged"
@@ -48,6 +48,7 @@
     "lint-staged": "^15.5.2",
     "prettier-plugin-packagejson": "^2.5.12",
     "simple-git-hooks": "^2.13.0",
+    "tsdown": "^0.11.5",
     "typescript": "^5.8.3"
   }
 }

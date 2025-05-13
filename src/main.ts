@@ -47,7 +47,6 @@ export async function runServer(options: RunServerOptions): Promise<void> {
   const serverUrl = `http://localhost:${options.port}`
   consola.box(`Server started at ${serverUrl}`)
 
-  consola.debug("Starting processQueue loop in background...")
   void processQueue()
 
   serve({

@@ -7,12 +7,21 @@ import { state } from "./state"
 
 export async function processQueue() {
   consola.debug("Starting processQueue loop")
+
+  const INITIAL_SLEEP_DURATION = 100
+  const MAX_SLEEP_DURATION = 32_000
+  let sleepDuration = INITIAL_SLEEP_DURATION
+
   while (true) {
     if (state.requestQueue.length <= 0) {
-      consola.debug("Request queue is empty, sleeping")
-      await sleep(100)
+      consola.debug(`Request queue is empty, sleeping for ${sleepDuration}ms`)
+      await sleep(sleepDuration)
+      sleepDuration = Math.min(sleepDuration * 2, MAX_SLEEP_DURATION)
       continue
     }
+
+    consola.debug(`Resetting sleep duration to ${INITIAL_SLEEP_DURATION}ms`)
+    sleepDuration = INITIAL_SLEEP_DURATION
 
     consola.debug(
       `Processing task from queue. Queue length: ${state.requestQueue.length}`,

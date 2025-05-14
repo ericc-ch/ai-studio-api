@@ -48,9 +48,7 @@ const selectModel = async (model: string) => {
 }
 
 const sendMessage = async (page: Page, message: string) => {
-  const textarea = page.locator(
-    'textarea[aria-label="Type something or pick one from prompt gallery"]',
-  )
+  const textarea = page.locator("ms-prompt-input-wrapper textarea")
   await textarea.fill(message)
   await page.keyboard.down("Control")
   await page.keyboard.press("Enter")

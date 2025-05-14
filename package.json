@@ -32,7 +32,7 @@
     "hono": "^4.7.9",
     "jsdom": "^26.1.0",
     "playwright": "^1.52.0",
-    "srvx": "^0.6.0",
+    "srvx": "^0.7.1",
     "tiny-invariant": "^1.3.3",
     "tinyexec": "^1.0.1",
     "tsx": "^4.19.4"
@@ -48,7 +48,7 @@
     "lint-staged": "^16.0.0",
     "prettier-plugin-packagejson": "^2.5.12",
     "simple-git-hooks": "^2.13.0",
-    "tsdown": "^0.11.6",
+    "tsdown": "^0.11.9",
     "typescript": "^5.8.3"
   }
 }

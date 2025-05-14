@@ -4,7 +4,7 @@
 
 Since Google AI Studio doesn't allow us to prefill assistant messages, there are 2 ways to do this
 
-- Use the "correct" way. We can do this by editing the studio file inside google drive. But it requires some sort of authentication or another google drive automation using playwright. Also latency is going to increase since we need to update the file in google drive first.
+- Use the "correct" way. We can do this by editing the studio file inside Google Drive. But it requires some sort of authentication or another Google Drive automation using Playwright. Also, latency is going to increase since we need to update the file in Google Drive first.
 - Use a hacky way. We can instead use a prompting technique that condenses down all of the message history and asks the LLM to answer as if it's continuing the conversation. This is faster and easier to implement.
 
 For now the second option is the only available implementation.
@@ -13,9 +13,11 @@ For now the second option is the only available implementation.
 
 A server that exposes Google AI Studio as an OpenAI compatible API. It achieves this by automating a web browser (via Playwright) to interact with the Google AI Studio interface.
 
+This can also be particularly useful for debugging prompts, as you can see the full conversation history in Google AI Studio.
+
 ## How it Works
 
-The server operates by launching a browser instance (non-headless) controlled by Playwright. When an API request is received (e.g., for a chat completion), the server translates this request into a series of automated actions within the Google AI Studio web interface. This typically includes:
+The server operates by launching a browser instance (non-headless) controlled by Playwright. When an API request is received (e.g., for a chat completion), the server translates this request into a series of automated actions within the Google AI Studio web interface. These actions are:
 
 - Navigating to the AI Studio chat new prompt page.
 - Selecting the specified model.
@@ -24,7 +26,7 @@ The server operates by launching a browser instance (non-headless) controlled by
 - Triggering the submission of the prompt.
 - Waiting for Google AI Studio to generate a response.
 - Extracting the generated text content from the web page, by using the "copy" action.
-- To handle multiple incoming requests sequentially and manage interactions with the single browser instance, the server utilizes a request queue. New API requests are added to this queue and processed one at a time, ensuring that browser automation tasks are executed in an orderly fashion.
+- To handle multiple incoming requests sequentially and manage interactions with the single browser instance, the server utilizes a request queue. New API requests are added to this queue and processed one at a time.
 
 The server then formats this extracted response to match the OpenAI API specification (e.g., for chat completions or streaming chunks) and returns it to the client. This entire process programmatically mimics how a human user would interact with AI Studio, effectively creating an API wrapper around the web UI.
 
@@ -88,11 +90,7 @@ bun run start
 ## Usage Tips
 
 - **Manual Request Approval (`--manual`):**
-  Enable the `--manual` flag to have the server prompt you in the console before processing each incoming API request. You'll be asked to type 'y' (yes) to approve or 'n' (no) to reject the request. This feature is particularly useful for:
-
-  - Monitoring API usage in real-time.
-  - Debugging client requests.
-
+  Enable the `--manual` flag to have the server prompt you in the console before processing each incoming API request. You'll be asked to type 'y' (yes) to approve or 'n' (no) to reject the request.
 - **Rate Limiting (`--rate-limit` and `--wait`):**
 
   - Use the `--rate-limit <seconds>` option to specify a minimum time interval (in seconds) between consecutive requests to Google AI Studio. This helps prevent overwhelming the AI Studio interface or hitting unofficial usage limits.

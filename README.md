@@ -24,6 +24,7 @@ The server operates by launching a browser instance (non-headless) controlled by
 - Triggering the submission of the prompt.
 - Waiting for Google AI Studio to generate a response.
 - Extracting the generated text content from the web page, by using the "copy" action.
+- To handle multiple incoming requests sequentially and manage interactions with the single browser instance, the server utilizes a request queue. New API requests are added to this queue and processed one at a time, ensuring that browser automation tasks are executed in an orderly fashion.
 
 The server then formats this extracted response to match the OpenAI API specification (e.g., for chat completions or streaming chunks) and returns it to the client. This entire process programmatically mimics how a human user would interact with AI Studio, effectively creating an API wrapper around the web UI.
 

@@ -68,7 +68,7 @@ const waitForResult = async (page: Page) => {
 
   // LMAO what is this
   while (await locatorVisible(stopButton)) {
-    consola.debug("waitForResult: Stop button is visible")
+    consola.debug("Stop button is visible, waiting for result")
   }
 }
 

@@ -9,14 +9,17 @@ export async function processQueue() {
   consola.debug("Starting processQueue loop")
 
   const INITIAL_SLEEP_DURATION = 100
-  const MAX_SLEEP_DURATION = 32_000
+  const MAX_SLEEP_DURATION = 10_000
   let sleepDuration = INITIAL_SLEEP_DURATION
 
   while (true) {
     if (state.requestQueue.length <= 0) {
       consola.debug(`Request queue is empty, sleeping for ${sleepDuration}ms`)
       await sleep(sleepDuration)
-      sleepDuration = Math.min(sleepDuration * 2, MAX_SLEEP_DURATION)
+      sleepDuration = Math.min(
+        Math.round(sleepDuration * 1.1),
+        MAX_SLEEP_DURATION,
+      )
       continue
     }
 

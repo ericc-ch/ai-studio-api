@@ -29,7 +29,7 @@
   "dependencies": {
     "citty": "^0.1.6",
     "consola": "^3.4.2",
-    "hono": "^4.7.9",
+    "hono": "^4.7.10",
     "jsdom": "^26.1.0",
     "playwright": "^1.52.0",
     "srvx": "^0.7.1",
@@ -48,7 +48,7 @@
     "lint-staged": "^16.0.0",
     "prettier-plugin-packagejson": "^2.5.13",
     "simple-git-hooks": "^2.13.0",
-    "tsdown": "^0.11.9",
+    "tsdown": "^0.11.11",
     "typescript": "^5.8.3"
   }
 }

@@ -36,7 +36,10 @@ export async function processQueue() {
       continue
     }
 
-    consola.debug("Creating chat completions for task:", task.payload)
+    consola.debug(
+      "Creating chat completions for task:",
+      `${task.payload.messages.at(-1)?.content.slice(-50)} (last message, last 50 characters)`,
+    )
     const response = await createChatCompletions(task.payload)
     task.promise.resolve(response)
     consola.debug("Task processed and promise resolved")

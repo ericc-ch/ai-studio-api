@@ -152,7 +152,10 @@ const buildNonStreamingResponse = (
     ],
   }
 
-  consola.debug("Non-streaming response built:", response)
+  consola.debug(
+    "Non-streaming response built:",
+    `${response.choices[0].message.content.slice(-50)} (Last 50 characters)`,
+  )
   return response
 }
 

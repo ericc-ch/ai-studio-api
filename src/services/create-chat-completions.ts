@@ -49,7 +49,19 @@ const selectModel = async (model: string) => {
 
 const sendMessage = async (page: Page, message: string) => {
   const textarea = page.locator("ms-prompt-input-wrapper textarea")
-  await textarea.fill(message)
+  await textarea.focus()
+
+  // Copy to clipboard
+  await page.evaluate(async (text) => {
+    await navigator.clipboard.writeText(text)
+  }, message)
+
+  // Paste from clipboard
+  await page.keyboard.down("Control")
+  await page.keyboard.press("V")
+  await page.keyboard.up("Control")
+
+  // Use Control + Enter to send the message
   await page.keyboard.down("Control")
   await page.keyboard.press("Enter")
   await page.keyboard.up("Control")

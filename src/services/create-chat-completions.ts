@@ -43,7 +43,10 @@ const selectModel = async (model: string) => {
   const modelSelector = page.locator("ms-run-settings ms-model-selector")
   await modelSelector.click()
 
-  const modelOption = page.locator("mat-option").filter({ hasText: model })
+  const modelOption = page
+    .locator("mat-option")
+    .filter({ hasText: model })
+    .last()
   await modelOption.click()
 }
 

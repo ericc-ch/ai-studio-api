@@ -13,18 +13,18 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsx watch ./src/main.ts",
-    "knip": "knip-bun",
+    "knip": "knip",
     "lint": "eslint .",
     "prepare": "simple-git-hooks",
     "release": "bumpp && pnpm publish --access public",
-    "prestart": "bun run build",
+    "prestart": "pnpm run build",
     "start": "node ./dist/main.js"
   },
   "simple-git-hooks": {
-    "pre-commit": "bunx lint-staged"
+    "pre-commit": "pnpm exec lint-staged"
   },
   "lint-staged": {
-    "*": "bun run lint --fix"
+    "*": "pnpm run lint --fix"
   },
   "dependencies": {
     "citty": "^0.1.6",
@@ -39,8 +39,8 @@
   },
   "devDependencies": {
     "@echristian/eslint-config": "^0.0.42",
-    "@types/bun": "^1.2.13",
     "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.15.21",
     "bumpp": "^10.1.1",
     "eslint": "^9.27.0",
     "jiti": "^2.4.2",
@@ -50,5 +50,6 @@
     "simple-git-hooks": "^2.13.0",
     "tsdown": "^0.11.12",
     "typescript": "^5.8.3"
-  }
+  },
+  "packageManager": "pnpm@10.11.0"
 }

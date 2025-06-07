@@ -1,6 +1,7 @@
 import invariant from "tiny-invariant"
 
 import { getDocument } from "~/lib/dom"
+import { LOCATORS } from "~/lib/locators"
 import { state } from "~/lib/state"
 
 const parseModel = (data: string) => {
@@ -16,7 +17,7 @@ export async function getModels() {
   const { page } = state
   invariant(page, "Browser page is not initialized")
 
-  const modelSelector = page.locator("ms-run-settings ms-model-selector")
+  const modelSelector = page.locator(LOCATORS.MODEL_SELECTOR)
   await modelSelector.click()
 
   const document = await getDocument(page)

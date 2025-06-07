@@ -5,6 +5,8 @@ import crypto from "node:crypto"
 import { expect } from "playwright/test"
 import invariant from "tiny-invariant"
 
+import { findAsync } from "~/lib/array"
+import { LOCATORS } from "~/lib/locators"
 import { buildPrompt } from "~/lib/prompt"
 import { sleep } from "~/lib/sleep"
 import { state } from "~/lib/state"
@@ -40,18 +42,22 @@ const selectModel = async (model: string) => {
   const { page } = state
   invariant(page, "Browser page is not initialized")
 
-  const modelSelector = page.locator("ms-run-settings ms-model-selector")
+  const modelSelector = page.locator(LOCATORS.MODEL_SELECTOR)
   await modelSelector.click()
 
-  const modelOption = page
-    .locator("mat-option")
-    .filter({ hasText: model })
-    .last()
-  await modelOption.click()
+  const modelOptions = await page.locator(LOCATORS.MODEL_OPTION_ID).all()
+
+  const selectedModel = await findAsync(
+    modelOptions,
+    async (item) => (await item.textContent())?.trim() === model,
+  )
+  invariant(selectedModel, "Model not found")
+
+  await selectedModel.click()
 }
 
 const sendMessage = async (page: Page, message: string) => {
-  const textarea = page.locator("ms-prompt-input-wrapper textarea")
+  const textarea = page.locator(LOCATORS.PROMPT_TEXTAREA)
   await textarea.focus()
 
   // Copy to clipboard
@@ -71,11 +77,8 @@ const sendMessage = async (page: Page, message: string) => {
 }
 
 const setTemperature = async (page: Page, temperature: number) => {
-  const temperatureSelector =
-    'div[data-test-id="temperatureSliderContainer"] input[type="number"]'
-
-  const tempElement = page.locator(temperatureSelector)
-  await tempElement.fill(roundTemperature(temperature))
+  const slider = page.locator(LOCATORS.TEMPERATURE_SLIDER)
+  await slider.fill(roundTemperature(temperature))
 }
 
 const waitForResult = async (page: Page) => {

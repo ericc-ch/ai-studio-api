@@ -67,13 +67,15 @@ bun install
 
 The following command line options are available:
 
-| Option       | Description                                  | Default | Alias |
-| ------------ | -------------------------------------------- | ------- | ----- |
-| --port       | Port to listen on                            | 4141    | -p    |
-| --verbose    | Enable verbose logging                       | false   | -v    |
-| --manual     | Enable manual request approval               | false   | none  |
-| --rate-limit | Rate limit in seconds between requests       | none    | -r    |
-| --wait       | Wait instead of error when rate limit is hit | false   | -w    |
+| Option          | Description                                     | Default    | Alias |
+| --------------- | ----------------------------------------------- | ---------- | ----- |
+| --port          | Port to listen on                               | 4157       | -p    |
+| --verbose       | Enable verbose logging                          | false      | -v    |
+| --manual        | Enable manual request approval                  | false      | none  |
+| --rate-limit    | Rate limit in seconds between requests          | none       | -r    |
+| --wait          | Wait instead of error when rate limit is hit    | false      | -w    |
+| --browser-path  | Path to the browser executable                  | `chromium` | none  |
+| --browser-delay | Delay in ms after launching the browser         | 5000       | none  |
 
 Example usage:
 
@@ -89,6 +91,12 @@ bun run dev --rate-limit 30
 
 # Wait instead of error when rate limit is hit
 bun run dev --rate-limit 30 --wait
+
+# Use a different browser executable
+bun run dev --browser-path /usr/bin/google-chrome
+
+# Set a different browser launch delay
+bun run dev --browser-delay 10000
 ```
 
 ## Running from Source

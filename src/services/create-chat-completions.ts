@@ -1,6 +1,26 @@
+/* eslint-disable max-lines */
 import type { Locator, Page } from "playwright"
 
 import consola from "consola"
+
+export interface ToolCall {
+  id: string
+  type: "function"
+  function: {
+    name: string
+    arguments: string
+  }
+}
+
+interface ToolCallDelta {
+  index: number
+  id?: string
+  type?: "function"
+  function?: {
+    name?: string
+    arguments?: string
+  }
+}
 import crypto from "node:crypto"
 import { expect } from "playwright/test"
 import invariant from "tiny-invariant"
@@ -17,7 +37,7 @@ export const createChatCompletions = async (
   const { page } = state
   invariant(page, "Browser page is not initialized")
 
-  const formattedMessage = buildPrompt(payload.messages)
+  const formattedMessage = buildPrompt(payload.messages, payload.tools)
 
   await clearChat(page)
 
@@ -135,47 +155,131 @@ function roundTemperature(num: number) {
   return formattedString
 }
 
+function parseToolCalls(
+  result: string,
+): { tool_calls: Array<ToolCall> } | null {
+  const toolCallRegex = /```json([\s\S]*?)```/
+  const match = result.match(toolCallRegex)
+
+  if (!match?.[1]) {
+    return null
+  }
+
+  try {
+    const json = JSON.parse(match[1]) as {
+      tool_calls?: Array<{ name: string; arguments: unknown }>
+    }
+
+    if (Array.isArray(json.tool_calls)) {
+      const tool_calls = json.tool_calls.map((tc) => ({
+        id: `call_${crypto.randomUUID()}`,
+        type: "function" as const,
+        function: {
+          name: tc.name,
+          arguments: JSON.stringify(tc.arguments),
+        },
+      }))
+      return { tool_calls }
+    }
+    return null
+  } catch (error) {
+    consola.debug("Failed to parse tool call JSON", error)
+    return null
+  }
+}
+
 const buildNonStreamingResponse = (
   payload: ChatCompletionsPayload,
   result: string,
 ) => {
   consola.debug("Building non-streaming response for result")
+
+  const toolCallData = parseToolCalls(result)
+
   const response: ChatCompletionResponse = {
     id: crypto.randomUUID(),
     object: "chat.completion",
-    created: Date.now(),
+    created: Math.floor(Date.now() / 1000),
     model: payload.model,
     choices: [
-      {
-        finish_reason: "stop",
-        index: 0,
-        logprobs: null,
-        message: {
-          content: result,
-          role: "assistant",
+      toolCallData ?
+        {
+          finish_reason: "tool_calls",
+          index: 0,
+          logprobs: null,
+          message: {
+            content: null,
+            role: "assistant",
+            tool_calls: toolCallData.tool_calls,
+          },
+        }
+      : {
+          finish_reason: "stop",
+          index: 0,
+          logprobs: null,
+          message: {
+            content: result,
+            role: "assistant",
+          },
         },
-      },
     ],
+    system_fingerprint: "fp_mock_fingerprint",
+    usage: {
+      prompt_tokens: 0, // MOCKED
+      completion_tokens: 0, // MOCKED
+      total_tokens: 0, // MOCKED
+    },
   }
 
   consola.debug(
     "Non-streaming response built:",
-    `${response.choices[0].message.content.slice(-50)} (Last 50 characters)`,
+    toolCallData ?
+      `${toolCallData.tool_calls.length} tool calls`
+    : `${response.choices[0].message.content?.slice(-50)} (Last 50 characters)`,
   )
   return response
 }
 
+// eslint-disable-next-line max-lines-per-function
 const buildStreamingResponse = (
   payload: ChatCompletionsPayload,
   result: string,
 ) => {
   consola.debug("Building streaming response for result")
+
+  const toolCallData = parseToolCalls(result)
+  if (toolCallData) {
+    return buildToolCallStreamingResponse(payload, toolCallData.tool_calls)
+  }
+
   const stringChunks = fakeChunk(result)
   const randomId = crypto.randomUUID()
-  const now = Date.now()
+  const now = Math.floor(Date.now() / 1000)
+  const system_fingerprint = "fp_mock_fingerprint"
+
+  const initialChunk: ChatCompletionChunk = {
+    id: randomId,
+    object: "chat.completion.chunk",
+    created: now,
+    model: payload.model,
+    system_fingerprint,
+    choices: [
+      {
+        index: 0,
+        delta: { role: "assistant" },
+        logprobs: null,
+        finish_reason: null,
+      },
+    ],
+  }
 
   const completionChunks: Array<ChatCompletionChunk> = stringChunks.map(
     (chunk) => ({
+      id: randomId,
+      object: "chat.completion.chunk",
+      created: now,
+      model: payload.model,
+      system_fingerprint,
       choices: [
         {
           delta: { content: chunk },
@@ -184,15 +288,133 @@ const buildStreamingResponse = (
           logprobs: null,
         },
       ],
-      created: now,
-      object: "chat.completion.chunk",
-      id: randomId,
-      model: payload.model,
     }),
   )
 
-  consola.debug(`Streaming response built: ${completionChunks.length} chunks`)
-  return completionChunks
+  const finalChunk: ChatCompletionChunk = {
+    id: randomId,
+    object: "chat.completion.chunk",
+    created: now,
+    model: payload.model,
+    system_fingerprint,
+    choices: [
+      {
+        index: 0,
+        delta: {},
+        logprobs: null,
+        finish_reason: "stop",
+      },
+    ],
+  }
+
+  const allChunks = [initialChunk, ...completionChunks, finalChunk]
+
+  consola.debug(`Streaming response built: ${allChunks.length} chunks`)
+  return allChunks
+}
+
+// eslint-disable-next-line max-lines-per-function
+function buildToolCallStreamingResponse(
+  payload: ChatCompletionsPayload,
+  tool_calls: Array<ToolCall>,
+) {
+  const randomId = crypto.randomUUID()
+  const now = Math.floor(Date.now() / 1000)
+  const system_fingerprint = "fp_mock_fingerprint"
+
+  const initialChunk: ChatCompletionChunk = {
+    id: randomId,
+    object: "chat.completion.chunk",
+    created: now,
+    model: payload.model,
+    system_fingerprint,
+    choices: [
+      {
+        index: 0,
+        delta: { role: "assistant", content: null },
+        logprobs: null,
+        finish_reason: null,
+      },
+    ],
+  }
+
+  const toolCallChunks: Array<ChatCompletionChunk> = []
+  for (const [index, tool_call] of tool_calls.entries()) {
+    // Chunk for the tool call structure with name
+    toolCallChunks.push({
+      id: randomId,
+      object: "chat.completion.chunk",
+      created: now,
+      model: payload.model,
+      system_fingerprint,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            tool_calls: [
+              {
+                index,
+                id: tool_call.id,
+                type: "function",
+                function: { name: tool_call.function.name, arguments: "" },
+              },
+            ],
+          },
+          logprobs: null,
+          finish_reason: null,
+        },
+      ],
+    })
+
+    // Chunk for the arguments
+    const argumentChunks = fakeChunk(tool_call.function.arguments)
+    for (const argChunk of argumentChunks) {
+      toolCallChunks.push({
+        id: randomId,
+        object: "chat.completion.chunk",
+        created: now,
+        model: payload.model,
+        system_fingerprint,
+        choices: [
+          {
+            index: 0,
+            delta: {
+              tool_calls: [
+                {
+                  index,
+                  function: { arguments: argChunk },
+                },
+              ],
+            },
+            logprobs: null,
+            finish_reason: null,
+          },
+        ],
+      })
+    }
+  }
+
+  const finalChunk: ChatCompletionChunk = {
+    id: randomId,
+    object: "chat.completion.chunk",
+    created: now,
+    model: payload.model,
+    system_fingerprint,
+    choices: [
+      {
+        index: 0,
+        delta: {},
+        logprobs: null,
+        finish_reason: "tool_calls",
+      },
+    ],
+  }
+
+  const allChunks = [initialChunk, ...toolCallChunks, finalChunk]
+  consola.debug(
+    `Streaming tool call response built: ${allChunks.length} chunks`,
+  )
+  return allChunks
 }
 
 function fakeChunk(content: string) {
@@ -211,17 +433,19 @@ export interface ChatCompletionChunk {
   object: "chat.completion.chunk"
   id: string
   model: string
+  system_fingerprint?: string
 }
 
 interface Delta {
-  content?: string
-  role?: string
+  content?: string | null
+  role?: "assistant"
+  tool_calls?: Array<ToolCallDelta>
 }
 
 interface Choice {
   index: number
   delta: Delta
-  finish_reason: "stop" | null
+  finish_reason: "stop" | "length" | "tool_calls" | "content_filter" | null
   logprobs: null
 }
 
@@ -229,35 +453,81 @@ interface Choice {
 
 export interface ChatCompletionResponse {
   id: string
-  object: string
+  object: "chat.completion"
   created: number
   model: string
   choices: [ChoiceNonStreaming]
+  system_fingerprint?: string
+  usage?: {
+    prompt_tokens: number
+    completion_tokens: number
+    total_tokens: number
+  }
 }
 
 interface ChoiceNonStreaming {
   index: number
-  message: Message
+  message: {
+    role: "assistant"
+    content: string | null
+    tool_calls?: Array<ToolCall>
+  }
   logprobs: null
-  finish_reason: "stop"
+  finish_reason: "stop" | "length" | "tool_calls" | "content_filter"
 }
 
 // Payload types
 
+export interface FunctionDescription {
+  name: string
+  description?: string
+  parameters?: object
+}
+
+export interface Tool {
+  type: "function"
+  function: FunctionDescription
+}
+
 export interface ChatCompletionsPayload {
   messages: Array<Message>
   model: string
+  frequency_penalty?: number
+  logit_bias?: Record<string, number>
+  logprobs?: boolean
+  max_tokens?: number
+  n?: number
+  presence_penalty?: number
+  response_format?: { type: "text" | "json_object" }
+  seed?: number
+  stop?: string | Array<string>
+  stream?: boolean
   temperature?: number
   top_p?: number
-  max_tokens?: number
-  stop?: Array<string>
-  n?: number
-  stream?: boolean
+  tools?: Array<Tool>
+  tool_choice?: string | object
+  user?: string
 }
 
+export type ContentPart =
+  | {
+      type: "text"
+      text: string
+    }
+  | {
+      type: "image_url"
+      image_url: {
+        url: string
+        detail?: "low" | "high" | "auto"
+      }
+    }
+
 export interface Message {
-  role: "user" | "assistant" | "system"
-  content: string
+  role: "user" | "assistant" | "system" | "tool" | "developer"
+  content: string | Array<ContentPart>
+  name?: string
+  tool_calls?: Array<unknown>
+  tool_call_id?: string
 }
 
 // https://platform.openai.com/docs/api-reference

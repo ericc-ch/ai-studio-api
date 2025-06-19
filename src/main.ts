@@ -16,6 +16,8 @@ interface RunServerOptions {
   manual: boolean
   rateLimit: number | undefined
   rateLimitWait: boolean
+  browserPath: string
+  browserDelay: number
 }
 
 export async function runServer(options: RunServerOptions): Promise<void> {
@@ -25,7 +27,7 @@ export async function runServer(options: RunServerOptions): Promise<void> {
   }
 
   consola.debug("Spawning Chromium...")
-  await spawnChromium()
+  await spawnChromium(options.browserPath, options.browserDelay)
 
   consola.debug("Creating new page...")
   state.page = await createPage()
@@ -86,6 +88,16 @@ const main = defineCommand({
       description:
         "Wait instead of error when rate limit is hit. Has no effect if rate limit is not set",
     },
+    "browser-path": {
+      type: "string",
+      default: "chromium",
+      description: "Path to the browser executable",
+    },
+    "browser-delay": {
+      type: "string",
+      default: "5000",
+      description: "Delay in ms after launching the browser",
+    },
   },
   run({ args }) {
     const rateLimitRaw = args["rate-limit"]
@@ -102,12 +114,20 @@ const main = defineCommand({
     consola.debug(`Manual arg: ${args.manual}`)
     consola.debug(`Wait arg: ${args.wait}`)
 
+    const browserPath = args["browser-path"]
+    consola.debug(`Browser path: ${browserPath}`)
+
+    const browserDelay = Number.parseInt(args["browser-delay"], 10)
+    consola.debug(`Browser delay: ${browserDelay}`)
+
     return runServer({
       port,
       verbose: args.verbose,
       manual: args.manual,
       rateLimit,
       rateLimitWait: Boolean(args.wait),
+      browserPath,
+      browserDelay,
     })
   },
 })

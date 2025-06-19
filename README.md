@@ -9,6 +9,18 @@ Since Google AI Studio doesn't allow us to prefill assistant messages, there are
 
 For now the second option is the only available implementation.
 
+### Prompt Building
+
+The prompt is constructed from three main parts:
+
+1.  **Base Instructions**: A static preamble that instructs the AI on its role and response format. It specifies that the AI should act as an assistant continuing a conversation and that its output must be only the message content, without any prefixes like "ASSISTANT:".
+
+2.  **Tool Instructions** (if applicable): If the request includes tools, a section is added that explains how the AI can use them. It provides a required JSON format for tool calls and lists the available tools with their names, descriptions, and parameters.
+
+3.  **Chat History**: The entire conversation history (from system, user, and assistant messages) is formatted into a plain text block. Each message is prefixed with its role in uppercase (e.g., `USER:`, `ASSISTANT:`).
+
+This combined prompt provides the model with all the necessary context in one go, allowing it to generate a contextually appropriate response as if it were participating in an ongoing chat.
+
 ## Project Overview
 
 A server that exposes Google AI Studio as an OpenAI compatible API. It achieves this by automating a web browser (via Playwright) to interact with the Google AI Studio interface.
@@ -29,6 +41,14 @@ The server operates by launching a browser instance (non-headless) controlled by
 - To handle multiple incoming requests sequentially and manage interactions with the single browser instance, the server utilizes a request queue. New API requests are added to this queue and processed one at a time.
 
 The server then formats this extracted response to match the OpenAI API specification (e.g., for chat completions or streaming chunks) and returns it to the client. This entire process programmatically mimics how a human user would interact with AI Studio, effectively creating an API wrapper around the web UI.
+
+## API Endpoints
+
+The server exposes the following OpenAI-compatible endpoints:
+
+- `GET /`: A simple health check endpoint that returns "Server running".
+- `GET /models` and `GET /v1/models`: Lists the available models from Google AI Studio.
+- `POST /chat/completions` and `POST /v1/chat/completions`: Creates a chat completion. This endpoint supports both streaming and non-streaming responses.
 
 ## Prerequisites
 

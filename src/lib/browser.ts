@@ -4,9 +4,9 @@ import { x } from "tinyexec"
 
 import { sleep } from "./sleep"
 
-export const spawnChromium = async () => {
-  x("chromium", ["--remote-debugging-port=9222"])
-  await sleep(5000)
+export const spawnChromium = async (executablePath: string, delay: number) => {
+  x(executablePath, ["--remote-debugging-port=9222"])
+  await sleep(delay)
 }
 
 export const createPage = async () => {

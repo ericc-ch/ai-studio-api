@@ -52,7 +52,9 @@ The server exposes the following OpenAI-compatible endpoints:
 
 ## Prerequisites
 
-- Bun (>= 1.2.x)
+- Node.js
+- Chromium based browser
+- Google account
 
 ## Installation
 
@@ -60,43 +62,43 @@ First, ensure you have the project code on your local machine (e.g., by cloning 
 Then, to install dependencies, run in the project's root directory:
 
 ```sh
-bun install
+pnpm install
 ```
 
 ## Command Line Options
 
 The following command line options are available:
 
-| Option          | Description                                     | Default    | Alias |
-| --------------- | ----------------------------------------------- | ---------- | ----- |
-| --port          | Port to listen on                               | 4157       | -p    |
-| --verbose       | Enable verbose logging                          | false      | -v    |
-| --manual        | Enable manual request approval                  | false      | none  |
-| --rate-limit    | Rate limit in seconds between requests          | none       | -r    |
-| --wait          | Wait instead of error when rate limit is hit    | false      | -w    |
-| --browser-path  | Path to the browser executable                  | `chromium` | none  |
-| --browser-delay | Delay in ms after launching the browser         | 5000       | none  |
+| Option          | Description                                  | Default    | Alias |
+| --------------- | -------------------------------------------- | ---------- | ----- |
+| --port          | Port to listen on                            | 4157       | -p    |
+| --verbose       | Enable verbose logging                       | false      | -v    |
+| --manual        | Enable manual request approval               | false      | none  |
+| --rate-limit    | Rate limit in seconds between requests       | none       | -r    |
+| --wait          | Wait instead of error when rate limit is hit | false      | -w    |
+| --browser-path  | Path to the browser executable               | `chromium` | none  |
+| --browser-delay | Delay in ms after launching the browser      | 5000       | none  |
 
 Example usage:
 
 ```sh
 # Run on custom port with verbose logging
-bun run dev --port 8080 --verbose
+pnpm run dev --port 8080 --verbose
 
 # Enable manual approval for each request
-bun run dev --manual
+pnpm run dev --manual
 
 # Set rate limit to 30 seconds between requests
-bun run dev --rate-limit 30
+pnpm run dev --rate-limit 30
 
 # Wait instead of error when rate limit is hit
-bun run dev --rate-limit 30 --wait
+pnpm run dev --rate-limit 30 --wait
 
 # Use a different browser executable
-bun run dev --browser-path /usr/bin/google-chrome
+pnpm run dev --browser-path /usr/bin/google-chrome
 
 # Set a different browser launch delay
-bun run dev --browser-delay 10000
+pnpm run dev --browser-delay 10000
 ```
 
 ## Running from Source
@@ -106,34 +108,14 @@ The project can be run from source in several ways:
 ### Development Mode
 
 ```sh
-bun run dev
+pnpm run dev
 ```
 
 ### Production Mode
 
 ```sh
-bun run start
+pnpm run start
 ```
-
-## Usage Tips
-
-- **Manual Request Approval (`--manual`):**
-  Enable the `--manual` flag to have the server prompt you in the console before processing each incoming API request. You'll be asked to type 'y' (yes) to approve or 'n' (no) to reject the request.
-- **Rate Limiting (`--rate-limit` and `--wait`):**
-
-  - Use the `--rate-limit <seconds>` option to specify a minimum time interval (in seconds) between consecutive requests to Google AI Studio. This helps prevent overwhelming the AI Studio interface or hitting unofficial usage limits.
-  - If you also enable the `--wait` flag, requests that arrive faster than the specified rate limit will be queued and processed sequentially after the necessary delay.
-  - If `--wait` is not enabled (the default), requests exceeding the rate limit will be immediately rejected with an error. This is useful if you prefer to handle backpressure on the client side.
-
-- **Verbose Logging (`--verbose` or `-v`):**
-  Use this flag to get more detailed output from the server, which can be helpful for troubleshooting or understanding the server's internal operations.
-
-## Limitations
-
-- **UI Dependency:** The project's functionality is tightly coupled to the Google AI Studio web interface. Any significant changes to the AI Studio UI by Google could potentially break the automation and require updates to this server.
-- **Performance:** Browser automation inherently introduces more latency compared to direct API interactions. Expect responses to be slower than native API calls.
-- **Session Management:** Relies on an active, logged-in session to Google AI Studio in the automated browser. Session expiry or login issues might disrupt service.
-- **Single Instance Operation:** Designed to run as a single server instance managing one browser session. Concurrent requests would break the thing entirely.
 
 ## Support the Project
 

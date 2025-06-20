@@ -36,16 +36,7 @@ export async function processQueue() {
       continue
     }
 
-    const lastMessageContent = task.payload.messages.at(-1)?.content ?? ""
-    const contentForLog =
-      typeof lastMessageContent === "string" ? lastMessageContent : (
-        JSON.stringify(lastMessageContent)
-      )
-
-    consola.debug(
-      "Creating chat completions for task:",
-      `${contentForLog.slice(-50)} (last message, last 50 characters)`,
-    )
+    consola.debug("Creating chat completions for task:", task.payload)
     const response = await createChatCompletions(task.payload)
     task.promise.resolve(response)
     consola.debug("Task processed and promise resolved")

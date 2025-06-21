@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "citty": "^0.1.6",
+    "clipboardy": "^4.0.0",
     "consola": "^3.4.2",
     "hono": "^4.8.2",
     "jsdom": "^26.1.0",

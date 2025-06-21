@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
 import { defineCommand, runMain } from "citty"
+import clipboard from "clipboardy"
 import consola from "consola"
 import { serve, type ServerHandler } from "srvx"
+import invariant from "tiny-invariant"
 
 import { createPage, spawnChromium } from "./lib/browser"
 import { processQueue } from "./lib/queue"
+import { generateEnvScript } from "./lib/shell"
 import { state } from "./lib/state"
 import { cacheModels } from "./lib/utils"
 import { server } from "./server"
@@ -18,8 +21,10 @@ interface RunServerOptions {
   rateLimitWait: boolean
   browserPath: string
   browserDelay: number
+  launchClaudeCode: boolean
 }
 
+// eslint-disable-next-line max-lines-per-function
 export async function runServer(options: RunServerOptions): Promise<void> {
   if (options.verbose) {
     consola.level = 5
@@ -47,6 +52,40 @@ export async function runServer(options: RunServerOptions): Promise<void> {
   await cacheModels()
 
   const serverUrl = `http://localhost:${options.port}`
+
+  if (options.launchClaudeCode) {
+    invariant(state.models, "Models should be loaded by now")
+
+    const selectedModel = await consola.prompt(
+      "Select a model to use with Claude Code",
+      {
+        type: "select",
+        options: state.models.data.map((model) => model.id),
+      },
+    )
+
+    const selectedSmallModel = await consola.prompt(
+      "Select a small model to use with Claude Code",
+      {
+        type: "select",
+        options: state.models.data.map((model) => model.id),
+      },
+    )
+
+    const command = generateEnvScript(
+      {
+        ANTHROPIC_BASE_URL: serverUrl,
+        ANTHROPIC_AUTH_TOKEN: "dummy",
+        ANTHROPIC_MODEL: selectedModel,
+        ANTHROPIC_SMALL_FAST_MODEL: selectedSmallModel,
+      },
+      "claude",
+    )
+
+    clipboard.writeSync(command)
+    consola.success("Copied Claude Code command to clipboard!")
+  }
+
   consola.box(`Server started at ${serverUrl}`)
 
   void processQueue()
@@ -81,6 +120,13 @@ const main = defineCommand({
       type: "string",
       description: "Rate limit in seconds between requests",
     },
+    "claude-code": {
+      alias: "c",
+      type: "boolean",
+      default: false,
+      description:
+        "Generate a command to launch Claude Code with the server config",
+    },
     wait: {
       alias: "w",
       type: "boolean",
@@ -113,6 +159,7 @@ const main = defineCommand({
     consola.debug(`Verbose arg: ${args.verbose}`)
     consola.debug(`Manual arg: ${args.manual}`)
     consola.debug(`Wait arg: ${args.wait}`)
+    consola.debug(`Claude Code arg: ${args["claude-code"]}`)
 
     const browserPath = args["browser-path"]
     consola.debug(`Browser path: ${browserPath}`)
@@ -128,6 +175,7 @@ const main = defineCommand({
       rateLimitWait: Boolean(args.wait),
       browserPath,
       browserDelay,
+      launchClaudeCode: args["claude-code"],
     })
   },
 })

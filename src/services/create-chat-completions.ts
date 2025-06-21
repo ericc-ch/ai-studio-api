@@ -411,6 +411,9 @@ function buildToolCallStreamingResponse(
 
 function fakeChunk(content: string) {
   const chunks: Array<string> = []
+  if (!content) {
+    return chunks
+  }
   for (let i = 0; i < content.length; i += 5) {
     chunks.push(content.slice(i, i + 5))
   }

@@ -2,14 +2,15 @@ import type { Context } from "hono"
 
 import { streamSSE } from "hono/streaming"
 
+import type {
+  ChatCompletionResponse,
+  ChatCompletionsPayload,
+} from "~/services/types"
+
 import { awaitApproval } from "~/lib/approval"
 import { checkRateLimit } from "~/lib/rate-limit"
 import { state } from "~/lib/state"
-import {
-  createChatCompletions,
-  type ChatCompletionResponse,
-  type ChatCompletionsPayload,
-} from "~/services/create-chat-completions"
+import { createChatCompletions } from "~/services/create-chat-completions"
 
 export async function handleCompletion(c: Context) {
   await checkRateLimit(state)

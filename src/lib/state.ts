@@ -1,11 +1,11 @@
 import type { Page } from "playwright"
 
+import type { ExpectedModels } from "~/services/get-models"
 import type {
   ChatCompletionChunk,
   ChatCompletionResponse,
   ChatCompletionsPayload,
-} from "~/services/create-chat-completions"
-import type { ExpectedModels } from "~/services/get-models"
+} from "~/services/types"
 
 export interface State {
   page?: Page

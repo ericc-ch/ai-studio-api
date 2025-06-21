@@ -17,7 +17,7 @@ export async function processQueue() {
       consola.debug(`Request queue is empty, sleeping for ${sleepDuration}ms`)
       await sleep(sleepDuration)
       sleepDuration = Math.min(
-        Math.round(sleepDuration * 1.1),
+        Math.round(sleepDuration * 1.5),
         MAX_SLEEP_DURATION,
       )
       continue

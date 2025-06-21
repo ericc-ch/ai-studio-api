@@ -66,24 +66,45 @@ Parameters (JSON Schema): ${params}
 export const buildPrompt = (messages: Array<Message>, tools?: Array<Tool>) => {
   const basePrompt = `
 You are an AI assistant.
-You have been given a chat history formatted as follows:
+You will be given a chat history formatted as follows:
 
+---
 SYSTEM: (system instructions for the assistant)
 USER: (user message)
 ASSISTANT: (assistant message)
+---
 ... and so on.
 
-Your task is to respond to the very last message in this history that is from the "USER".
-Please provide your response as if you are continuing the conversation.
+Follow these instructions when responding to the user:
+- Your primary task is to answer the last "USER" message in the chat history.
+- Your response must be only the text of your answer.
+- Do not include any prefixes like "ASSISTANT:" or "AI:".
 
-Most importantly, your response should be only the content of your message.
-Do not include any prefixes like "ASSISTANT:", "AI:", or anything else. Just the text of your answer.
+Here are some examples of how to respond:
 
-For example, if the last user message is "What is the capital of France?", your response should be:
-"The capital of France is Paris."
+EXAMPLE 1
+The following is the chat history:
+---
+USER: What is the capital of France?
+---
 
-Do not write it like this:
-"ASSISTANT: The capital of France is Paris."
+Your response:
+The capital of France is Paris.
+
+
+EXAMPLE 2
+The following is the chat history:
+---
+USER: Hi there!
+ASSISTANT: Hello! How can I help you today?
+USER: Can you write a short haiku about a robot?
+---
+
+Your response:
+Metal gears now turn,
+Circuits hum a soft, low song,
+Thinking fills the room.
+
 `.trim()
 
   let toolInstructions = ""

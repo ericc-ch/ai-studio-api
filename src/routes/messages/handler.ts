@@ -30,12 +30,15 @@ export async function handleMessages(c: Context) {
     Promise.withResolvers<Awaited<ReturnType<typeof createChatCompletions>>>()
 
   const anthropicPayload = await c.req.json<AnthropicMessagesPayload>()
-  consola.debug("Anthropic request payload:", JSON.stringify(anthropicPayload))
+  consola.debug(
+    "Anthropic request payload:",
+    JSON.stringify(anthropicPayload).slice(-400),
+  )
 
   const openAIPayload = translateToOpenAI(anthropicPayload)
   consola.debug(
     "Translated OpenAI request payload:",
-    JSON.stringify(openAIPayload),
+    JSON.stringify(openAIPayload).slice(-400),
   )
 
   state.requestQueue.push({ payload: openAIPayload, promise })
@@ -43,10 +46,6 @@ export async function handleMessages(c: Context) {
   const response = await promise.promise
 
   if (isNonStreaming(response)) {
-    consola.debug(
-      "Non-streaming response from Copilot:",
-      JSON.stringify(response).slice(-400),
-    )
     const anthropicResponse = translateToAnthropic(response)
     consola.debug(
       "Translated Anthropic response:",
@@ -55,7 +54,6 @@ export async function handleMessages(c: Context) {
     return c.json(anthropicResponse)
   }
 
-  consola.debug("Streaming response from Copilot")
   return streamSSE(c, async (stream) => {
     const streamState: AnthropicStreamState = {
       messageStartSent: false,

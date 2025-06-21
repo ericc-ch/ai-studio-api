@@ -2,7 +2,7 @@ import { chromium } from "playwright"
 import invariant from "tiny-invariant"
 import { x } from "tinyexec"
 
-import { sleep } from "./sleep"
+import { sleep } from "./utils"
 
 export const spawnChromium = async (executablePath: string, delay: number) => {
   x(executablePath, ["--remote-debugging-port=9222"])

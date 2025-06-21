@@ -7,7 +7,7 @@ export interface ToolCall {
   }
 }
 
-interface ToolCallDelta {
+export interface ToolCallDelta {
   index: number
   id?: string
   type?: "function"
@@ -28,13 +28,13 @@ export interface ChatCompletionChunk {
   system_fingerprint?: string
 }
 
-interface Delta {
+export interface Delta {
   content?: string | null
   role?: "assistant"
   tool_calls?: Array<ToolCallDelta>
 }
 
-interface Choice {
+export interface Choice {
   index: number
   delta: Delta
   finish_reason: "stop" | "length" | "tool_calls" | "content_filter" | null
@@ -57,7 +57,7 @@ export interface ChatCompletionResponse {
   }
 }
 
-interface ChoiceNonStreaming {
+export interface ChoiceNonStreaming {
   index: number
   message: {
     role: "assistant"
@@ -101,22 +101,24 @@ export interface ChatCompletionsPayload {
   user?: string
 }
 
-export type ContentPart =
-  | {
-      type: "text"
-      text: string
-    }
-  | {
-      type: "image_url"
-      image_url: {
-        url: string
-        detail?: "low" | "high" | "auto"
-      }
-    }
+export type TextPart = {
+  type: "text"
+  text: string
+}
+
+export type ImagePart = {
+  type: "image_url"
+  image_url: {
+    url: string
+    detail?: "low" | "high" | "auto"
+  }
+}
+
+export type ContentPart = TextPart | ImagePart
 
 export interface Message {
   role: "user" | "assistant" | "system" | "tool" | "developer"
-  content: string | Array<ContentPart>
+  content: string | Array<ContentPart> | null
   name?: string
   tool_calls?: Array<ToolCall>
   tool_call_id?: string

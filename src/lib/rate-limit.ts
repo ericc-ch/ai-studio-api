@@ -2,8 +2,8 @@ import consola from "consola"
 
 import type { State } from "./state"
 
-import { HTTPError } from "./http-error"
-import { sleep } from "./sleep"
+import { HTTPError } from "./error"
+import { sleep } from "./utils"
 
 export async function checkRateLimit(state: State) {
   if (state.rateLimitSeconds === undefined) return

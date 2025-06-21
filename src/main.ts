@@ -5,9 +5,9 @@ import consola from "consola"
 import { serve, type ServerHandler } from "srvx"
 
 import { createPage, spawnChromium } from "./lib/browser"
-import { cacheModels } from "./lib/models"
 import { processQueue } from "./lib/queue"
 import { state } from "./lib/state"
+import { cacheModels } from "./lib/utils"
 import { server } from "./server"
 
 interface RunServerOptions {

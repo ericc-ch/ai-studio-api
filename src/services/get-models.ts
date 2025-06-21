@@ -30,12 +30,19 @@ export async function getModels() {
 
   const expected: ExpectedModels = {
     object: "list",
-    data: models.map((model) => ({
-      id: model.name,
-      object: "model",
-      created: Date.now(),
-      owned_by: "google",
-    })),
+    data: models.map((model) => {
+      const now = new Date()
+      return {
+        id: model.name,
+        object: "model",
+        type: "model",
+        created: Math.floor(now.getTime() / 1000),
+        created_at: now.toISOString(),
+        owned_by: "google",
+        display_name: model.label,
+      }
+    }),
+    has_more: false,
   }
 
   const modelOption = page.locator("mat-option").first()
@@ -47,11 +54,15 @@ export async function getModels() {
 interface Model {
   id: string
   object: "model"
+  type: "model"
   created: number
+  created_at: string
   owned_by: string
+  display_name: string
 }
 
 export interface ExpectedModels {
   object: "list"
   data: Array<Model>
+  has_more: boolean
 }

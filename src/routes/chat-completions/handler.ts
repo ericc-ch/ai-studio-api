@@ -7,12 +7,12 @@ import type {
   ChatCompletionsPayload,
 } from "~/services/types"
 
-import { awaitApproval } from "~/lib/approval"
 import { checkRateLimit } from "~/lib/rate-limit"
 import { state } from "~/lib/state"
+import { awaitApproval } from "~/lib/utils"
 import { createChatCompletions } from "~/services/create-chat-completions"
 
-export async function handleCompletion(c: Context) {
+export async function handleChatCompletion(c: Context) {
   await checkRateLimit(state)
   if (state.manualApprove) await awaitApproval()
 

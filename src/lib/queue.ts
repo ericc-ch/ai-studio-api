@@ -2,8 +2,8 @@ import consola from "consola"
 
 import { createChatCompletions } from "~/services/create-chat-completions"
 
-import { sleep } from "./sleep"
 import { state } from "./state"
+import { sleep } from "./utils"
 
 export async function processQueue() {
   consola.debug("Starting processQueue loop")

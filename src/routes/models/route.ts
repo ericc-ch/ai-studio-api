@@ -1,14 +1,13 @@
 import { Hono } from "hono"
 
-import { forwardError } from "~/lib/forward-error"
-import { getModels } from "~/services/get-models"
+import { forwardError } from "~/lib/error"
+import { state } from "~/lib/state"
 
 export const modelRoutes = new Hono()
 
 modelRoutes.get("/", async (c) => {
   try {
-    const models = await getModels()
-    return c.json(models)
+    return c.json(state.models)
   } catch (error) {
     return await forwardError(c, error)
   }

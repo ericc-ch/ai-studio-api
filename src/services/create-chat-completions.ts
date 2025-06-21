@@ -6,11 +6,10 @@ import crypto from "node:crypto"
 import { expect } from "playwright/test"
 import invariant from "tiny-invariant"
 
-import { findAsync } from "~/lib/array"
 import { LOCATORS } from "~/lib/locators"
 import { buildPrompt } from "~/lib/prompt"
-import { sleep } from "~/lib/sleep"
 import { state } from "~/lib/state"
+import { findAsync, sleep } from "~/lib/utils"
 
 import type {
   ChatCompletionChunk,

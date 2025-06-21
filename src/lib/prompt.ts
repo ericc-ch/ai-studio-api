@@ -1,34 +1,49 @@
-import type { Message, Tool } from "~/services/create-chat-completions"
+import type { Message, Tool } from "~/services/types"
 
 function formatMessages(messages: Array<Message>): string {
-  let systemMessages = ""
-  let otherMessages = ""
+  return messages
+    .map((message) => {
+      // --- Extract content ---
+      let content: string
+      if (typeof message.content === "string") {
+        content = message.content
+      } else if (Array.isArray(message.content)) {
+        content = message.content
+          .filter(
+            (part): part is { type: "text"; text: string } =>
+              part.type === "text",
+          )
+          .map((part) => part.text)
+          .join("\n")
+      } else {
+        content = ""
+      }
 
-  for (const message of messages) {
-    let content: string
-    if (typeof message.content === "string") {
-      content = message.content
-    } else if (Array.isArray(message.content)) {
-      // For now, just combine text parts. Image parts are ignored.
-      content = message.content
-        .filter(
-          (part): part is { type: "text"; text: string } =>
-            part.type === "text",
-        )
-        .map((part) => part.text)
-        .join("\n")
-    } else {
-      content = "" // Should not happen with correct types
-    }
+      // --- Format message based on role ---
+      if (message.role === "tool") {
+        // The content of a tool message is the return value of the function.
+        // We put it on a new line for readability.
+        return `TOOL (tool_call_id: ${message.tool_call_id}):\n${content}`
+      }
 
-    if (message.role === "system") {
-      systemMessages += `${message.role.toUpperCase()}: ${content}\n`
-    } else {
-      otherMessages += `${message.role.toUpperCase()}: ${content}\n`
-    }
-  }
+      let roleAndContent = `${message.role.toUpperCase()}:`
+      if (content) {
+        roleAndContent += ` ${content}`
+      }
 
-  return systemMessages + otherMessages
+      if (message.role === "assistant" && message.tool_calls) {
+        // Add tool calls to assistant messages, nicely formatted.
+        const toolCallsString = `\nTOOL_CALLS: ${JSON.stringify(
+          message.tool_calls,
+          null,
+          2,
+        )}`
+        return roleAndContent + toolCallsString
+      }
+
+      return roleAndContent
+    })
+    .join("\n\n") // Use a double newline to separate messages for clarity
 }
 
 function formatTools(tools: Array<Tool>): string {
@@ -47,6 +62,7 @@ Parameters (JSON Schema): ${params}
   return toolStrings.join("\n\n")
 }
 
+// eslint-disable-next-line max-lines-per-function
 export const buildPrompt = (messages: Array<Message>, tools?: Array<Tool>) => {
   const basePrompt = `
 You are an AI assistant.
@@ -85,6 +101,27 @@ You have access to the following tools. To use a tool, you MUST respond with a J
     }
   ]
 }
+
+For example, if the user asks for the weather, your response would be a tool call.
+The chat history would then be updated with the tool call and the tool's response.
+It would look something like this:
+
+USER: What's the weather like in San Francisco?
+ASSISTANT:
+TOOL_CALLS: [
+  {
+    "id": "call_1234",
+    "type": "function",
+    "function": {
+      "name": "get_weather",
+      "arguments": "{\\"city\\":\\"San Francisco\\"}"
+    }
+  }
+]
+TOOL (tool_call_id: call_1234):
+{"temperature": "72F", "conditions": "sunny"}
+
+You would then see this new history and respond to the user with the weather information.
 
 Here are the available tools:
 ---

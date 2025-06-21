@@ -15,8 +15,8 @@ importers:
         specifier: ^3.4.2
         version: 3.4.2
       hono:
-        specifier: ^4.8.0
-        version: 4.8.0
+        specifier: ^4.8.2
+        version: 4.8.2
       jsdom:
         specifier: ^26.1.0
         version: 26.1.0
@@ -1476,8 +1476,8 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono@4.8.0:
-    resolution: {integrity: sha512-NoiHrqJxoe1MYXqW+/0/Q4NCizKj2Ivm4KmX8mOSBtw9UJ7KYaOGKkO7csIwO5UlZpfvVRdcgiMb0GGyjEjtcw==}
+  hono@4.8.2:
+    resolution: {integrity: sha512-hM+1RIn9PK1I6SiTNS6/y7O1mvg88awYLFEuEtoiMtRyT3SD2iu9pSFgbBXT3b1Ua4IwzvSTLvwO0SEhDxCi4w==}
     engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
@@ -4003,7 +4003,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.8.0: {}
+  hono@4.8.2: {}
 
   hookable@5.5.3: {}
 

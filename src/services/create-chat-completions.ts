@@ -91,9 +91,14 @@ const setTemperature = async (page: Page, temperature: number) => {
 const waitForResult = async (page: Page) => {
   const stopButton = page.getByRole("button").filter({ hasText: "Stop" })
 
+  let sleepDuration = 100
+  const maxSleepDuration = 10_000
+
   // LMAO what is this
   while (await locatorVisible(stopButton)) {
-    consola.debug("Stop button is visible, waiting for result")
+    consola.debug(`Stop button is visible, waiting for ${sleepDuration}ms`)
+    await sleep(sleepDuration)
+    sleepDuration = Math.min(sleepDuration * 2, maxSleepDuration)
   }
 }
 

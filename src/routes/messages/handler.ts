@@ -20,7 +20,73 @@ import {
 } from "./non-stream-translation"
 import { translateChunkToAnthropicEvents } from "./stream-translation"
 
-// eslint-disable-next-line max-lines-per-function
+type ChatCompletionsPromise = PromiseWithResolvers<
+  Awaited<ReturnType<typeof createChatCompletions>>
+>
+
+const isNonStreaming = (
+  response: Awaited<ReturnType<typeof createChatCompletions>>,
+): response is ChatCompletionResponse => Object.hasOwn(response, "choices")
+
+function handleStreamingResponse(c: Context, promise: ChatCompletionsPromise) {
+  return streamSSE(c, async (stream) => {
+    const pingInterval = setInterval(() => {
+      consola.debug("Sending ping while waiting for completion to start")
+      void stream.writeSSE({
+        event: "ping",
+        data: JSON.stringify({ type: "ping" }),
+      })
+    }, 3000)
+
+    const response = await promise.promise
+    clearInterval(pingInterval)
+
+    if (isNonStreaming(response)) {
+      consola.error(
+        "Expected a streaming response but got a non-streaming one.",
+      )
+      return
+    }
+
+    const streamState: AnthropicStreamState = {
+      messageStartSent: false,
+      contentBlockIndex: 0,
+      contentBlockOpen: false,
+      toolCalls: {},
+    }
+
+    for (const chunk of response) {
+      const events = translateChunkToAnthropicEvents(chunk, streamState)
+
+      for (const event of events) {
+        consola.debug("Translated Anthropic event:", JSON.stringify(event))
+        await stream.writeSSE({
+          event: event.type,
+          data: JSON.stringify(event),
+        })
+      }
+    }
+  })
+}
+
+async function handleNonStreamingResponse(
+  c: Context,
+  promise: ChatCompletionsPromise,
+) {
+  const response = await promise.promise
+
+  if (isNonStreaming(response)) {
+    const anthropicResponse = translateToAnthropic(response)
+    consola.debug(
+      "Translated Anthropic response:",
+      JSON.stringify(anthropicResponse),
+    )
+    return c.json(anthropicResponse)
+  }
+
+  consola.error("Received a streaming response for a non-streaming request.")
+}
+
 export async function handleMessages(c: Context) {
   await checkRateLimit(state)
   if (state.manualApprove) {
@@ -45,60 +111,8 @@ export async function handleMessages(c: Context) {
   state.requestQueue.push({ payload: openAIPayload, promise })
 
   if (anthropicPayload.stream) {
-    return streamSSE(c, async (stream) => {
-      const pingInterval = setInterval(() => {
-        consola.debug("Sending ping while waiting for completion to start")
-        void stream.writeSSE({
-          event: "ping",
-          data: JSON.stringify({ type: "ping" }),
-        })
-      }, 3000)
-
-      const response = await promise.promise
-      clearInterval(pingInterval)
-
-      if (isNonStreaming(response)) {
-        consola.error(
-          "Expected a streaming response but got a non-streaming one.",
-        )
-        return
-      }
-
-      const streamState: AnthropicStreamState = {
-        messageStartSent: false,
-        contentBlockIndex: 0,
-        contentBlockOpen: false,
-        toolCalls: {},
-      }
-
-      for (const chunk of response) {
-        const events = translateChunkToAnthropicEvents(chunk, streamState)
-
-        for (const event of events) {
-          consola.debug("Translated Anthropic event:", JSON.stringify(event))
-          await stream.writeSSE({
-            event: event.type,
-            data: JSON.stringify(event),
-          })
-        }
-      }
-    })
+    return handleStreamingResponse(c, promise)
   }
 
-  const response = await promise.promise
-
-  if (isNonStreaming(response)) {
-    const anthropicResponse = translateToAnthropic(response)
-    consola.debug(
-      "Translated Anthropic response:",
-      JSON.stringify(anthropicResponse),
-    )
-    return c.json(anthropicResponse)
-  }
-
-  consola.error("Received a streaming response for a non-streaming request.")
+  return handleNonStreamingResponse(c, promise)
 }
-
-const isNonStreaming = (
-  response: Awaited<ReturnType<typeof createChatCompletions>>,
-): response is ChatCompletionResponse => Object.hasOwn(response, "choices")

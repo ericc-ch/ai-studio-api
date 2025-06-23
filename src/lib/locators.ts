@@ -6,4 +6,6 @@ export const LOCATORS = {
 
   TEMPERATURE_SLIDER:
     'div[data-test-id="temperatureSliderContainer"] input[type="number"]',
+
+  JSON_MODE: 'mat-slide-toggle button[aria-label="Structured output"]',
 }

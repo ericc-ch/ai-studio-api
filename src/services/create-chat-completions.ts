@@ -29,6 +29,7 @@ export const createChatCompletions = async (
   await clearChat(page)
 
   await selectModel(payload.model)
+  await enableJSON(page)
   await setTemperature(page, payload.temperature ?? 1)
   await sendMessage(page, formattedMessage)
 
@@ -81,6 +82,13 @@ const sendMessage = async (page: Page, message: string) => {
   await page.keyboard.down("Control")
   await page.keyboard.press("Enter")
   await page.keyboard.up("Control")
+}
+
+const enableJSON = async (page: Page) => {
+  const jsonButton = page.locator(LOCATORS.JSON_MODE)
+  if ((await jsonButton.getAttribute("aria-checked")) === "true") return
+
+  await jsonButton.click()
 }
 
 const setTemperature = async (page: Page, temperature: number) => {
@@ -150,15 +158,22 @@ function roundTemperature(num: number) {
 function parseToolCalls(
   result: string,
 ): { tool_calls: Array<ToolCall> } | null {
-  const toolCallRegex = /```json([\s\S]*?)```/
-  const match = result.match(toolCallRegex)
+  let jsonString: string | undefined
 
-  if (!match?.[1]) {
+  if (state.json) {
+    jsonString = result
+  } else {
+    const toolCallRegex = /```json([\s\S]*?)```/
+    const match = result.match(toolCallRegex)
+    jsonString = match?.[1]
+  }
+
+  if (!jsonString) {
     return null
   }
 
   try {
-    const json = JSON.parse(match[1]) as {
+    const json = JSON.parse(jsonString) as {
       tool_calls?: Array<{ name: string; arguments: unknown }>
     }
 
@@ -180,6 +195,7 @@ function parseToolCalls(
   }
 }
 
+// eslint-disable-next-line max-lines-per-function
 const buildNonStreamingResponse = (
   payload: ChatCompletionsPayload,
   result: string,
@@ -187,6 +203,17 @@ const buildNonStreamingResponse = (
   consola.debug("Building non-streaming response for result")
 
   const toolCallData = parseToolCalls(result)
+
+  let content: string | null = result
+  if (state.json && !toolCallData) {
+    try {
+      const json = JSON.parse(result) as { content?: string | null }
+      content = json.content ?? null
+    } catch (error) {
+      consola.debug("Failed to parse content from JSON response", error)
+      content = null
+    }
+  }
 
   const response: ChatCompletionResponse = {
     id: crypto.randomUUID(),
@@ -210,7 +237,7 @@ const buildNonStreamingResponse = (
           index: 0,
           logprobs: null,
           message: {
-            content: result,
+            content: content,
             role: "assistant",
           },
         },
@@ -244,7 +271,21 @@ const buildStreamingResponse = (
     return buildToolCallStreamingResponse(payload, toolCallData.tool_calls)
   }
 
-  const stringChunks = fakeChunk(result)
+  let content = result
+  if (state.json) {
+    try {
+      const json = JSON.parse(result) as { content?: string }
+      content = json.content ?? ""
+    } catch (error) {
+      consola.debug(
+        "Failed to parse content from JSON response for streaming",
+        error,
+      )
+      content = ""
+    }
+  }
+
+  const stringChunks = fakeChunk(content)
   const randomId = crypto.randomUUID()
   const now = Math.floor(Date.now() / 1000)
   const system_fingerprint = "fp_mock_fingerprint"

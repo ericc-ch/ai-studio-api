@@ -1,5 +1,6 @@
 import consola from "consola"
 
+import { checkRateLimit } from "~/lib/rate-limit"
 import { createChatCompletions } from "~/services/create-chat-completions"
 
 import { state } from "./state"
@@ -35,6 +36,8 @@ export async function processQueue() {
       consola.debug("Shifted task is undefined, continuing")
       continue
     }
+
+    await checkRateLimit(state)
 
     consola.debug("Creating chat completions for task:", task.payload)
     const response = await createChatCompletions(task.payload)

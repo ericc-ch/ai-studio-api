@@ -9,13 +9,11 @@ import type {
   ChatCompletionsPayload,
 } from "~/services/types"
 
-import { checkRateLimit } from "~/lib/rate-limit"
 import { state } from "~/lib/state"
 import { awaitApproval } from "~/lib/utils"
 import { createChatCompletions } from "~/services/create-chat-completions"
 
 export async function handleChatCompletion(c: Context) {
-  await checkRateLimit(state)
   if (state.manualApprove) await awaitApproval()
 
   const payload = await c.req.json<ChatCompletionsPayload>()

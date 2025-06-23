@@ -6,7 +6,6 @@ import { streamSSE } from "hono/streaming"
 
 import type { ChatCompletionResponse } from "~/services/types"
 
-import { checkRateLimit } from "~/lib/rate-limit"
 import { state } from "~/lib/state"
 import { awaitApproval } from "~/lib/utils"
 import { createChatCompletions } from "~/services/create-chat-completions"
@@ -89,7 +88,6 @@ async function handleNonStreamingResponse(
 }
 
 export async function handleMessages(c: Context) {
-  await checkRateLimit(state)
   if (state.manualApprove) {
     await awaitApproval()
   }

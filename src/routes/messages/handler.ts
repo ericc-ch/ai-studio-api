@@ -116,6 +116,8 @@ export async function handleMessages(c: Context) {
       ...c.req.header(),
       Authorization: `Bearer ${state.geminiApiKey}`,
     }
+    delete headers["content-length"]
+    delete headers.host
 
     const body = {
       ...openAIPayload,

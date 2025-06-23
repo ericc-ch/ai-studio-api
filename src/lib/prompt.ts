@@ -10,6 +10,7 @@ function buildJsonPrompt(
 Your response MUST be a single, valid JSON object.
 
 If you are just sending a message, the JSON object should have a single key "content" with your response as a string value.
+The value of "content" can be a markdown formatted string.
 Example:
 {
   "content": "Hello! How can I help you today?"

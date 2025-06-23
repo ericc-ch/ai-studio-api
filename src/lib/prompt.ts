@@ -6,17 +6,7 @@ function buildJsonPrompt(
   messages: Array<Message>,
   tools?: Array<Tool>,
 ): string {
-  const system_prompt = `You are an AI assistant operating in JSON mode.
-Your response MUST be a single, valid JSON object.
-
-If you are just sending a message, the JSON object should have a single key "content" with your response as a string value.
-The value of "content" can be a markdown formatted string.
-Example:
-{
-  "content": "Hello! How can I help you today?"
-}
-
-If you need to call one or more tools, the JSON object must contain a "tool_calls" key, which is an array of tool call objects.
+  const toolInstructions = `If you need to call one or more tools, the JSON object must contain a "tool_calls" key, which is an array of tool call objects.
 Each tool call object must have a "name" (the tool name) and "arguments" (an object of parameters).
 Example:
 {
@@ -30,14 +20,29 @@ Example:
   ]
 }
 
+Available tools are in the 'tools' array.`
+
+  const system_prompt = `You are an AI assistant operating in JSON mode.
+Your response MUST be a single, valid JSON object.
+
+If you are just sending a message, the JSON object should have a single key "content" with your response as a string value.
+The value of "content" can be a markdown formatted string.
+Example:
+{
+  "content": "Hello! How can I help you today?"
+}${tools?.length ? `\n\n${toolInstructions}` : ""}
+
 The user's request is provided in the 'messages' array.
-Available tools are in the 'tools' array.
 Do not add any other text outside of the JSON object in your response.`
 
   const promptPayload = {
     system_prompt,
     messages,
     tools,
+  }
+
+  if (tools === undefined) {
+    delete promptPayload.tools
   }
 
   return JSON.stringify(promptPayload, null, 2)

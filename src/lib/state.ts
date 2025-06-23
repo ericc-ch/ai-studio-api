@@ -16,6 +16,8 @@ export interface State {
   rateLimitWait: boolean
   json: boolean
 
+  geminiApiKey?: string
+
   // Rate limiting configuration
   rateLimitSeconds?: number
   lastRequestTimestamp?: number

@@ -1,6 +1,7 @@
 import type { Context } from "hono"
 
 import consola from "consola"
+import { proxy } from "hono/proxy"
 import { streamSSE } from "hono/streaming"
 
 import type { ChatCompletionResponse } from "~/services/types"
@@ -93,9 +94,6 @@ export async function handleMessages(c: Context) {
     await awaitApproval()
   }
 
-  const promise =
-    Promise.withResolvers<Awaited<ReturnType<typeof createChatCompletions>>>()
-
   const anthropicPayload = await c.req.json<AnthropicMessagesPayload>()
   consola.debug(
     "Anthropic request payload:",
@@ -107,6 +105,32 @@ export async function handleMessages(c: Context) {
     "Translated OpenAI request payload:",
     JSON.stringify(openAIPayload).slice(-400),
   )
+
+  if (openAIPayload.model.startsWith("proxy-")) {
+    const geminiUrl =
+      "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+
+    consola.debug(`Proxying request for ${openAIPayload.model} to ${geminiUrl}`)
+
+    const headers = {
+      ...c.req.header(),
+      Authorization: `Bearer ${state.geminiApiKey}`,
+    }
+
+    const body = {
+      ...openAIPayload,
+      model: openAIPayload.model.replace("proxy-", ""),
+    }
+
+    return proxy(geminiUrl, {
+      method: c.req.method,
+      headers,
+      body: JSON.stringify(body),
+    })
+  }
+
+  const promise =
+    Promise.withResolvers<Awaited<ReturnType<typeof createChatCompletions>>>()
 
   state.requestQueue.push({ payload: openAIPayload, promise })
 

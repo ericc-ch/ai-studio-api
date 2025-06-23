@@ -1,5 +1,7 @@
 import type { Context } from "hono"
 
+import consola from "consola"
+import { proxy } from "hono/proxy"
 import { streamSSE } from "hono/streaming"
 
 import type {
@@ -16,9 +18,33 @@ export async function handleChatCompletion(c: Context) {
   await checkRateLimit(state)
   if (state.manualApprove) await awaitApproval()
 
+  const payload = await c.req.json<ChatCompletionsPayload>()
+
+  if (payload.model.startsWith("proxy-")) {
+    const geminiUrl =
+      "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+
+    consola.debug(`Proxying request for ${payload.model} to ${geminiUrl}`)
+
+    const headers = {
+      ...c.req.header(),
+      Authorization: `Bearer ${state.geminiApiKey}`,
+    }
+
+    const body = {
+      ...payload,
+      model: payload.model.replace("proxy-", ""),
+    }
+
+    return proxy(geminiUrl, {
+      method: c.req.method,
+      headers,
+      body: JSON.stringify(body),
+    })
+  }
+
   const promise =
     Promise.withResolvers<Awaited<ReturnType<typeof createChatCompletions>>>()
-  const payload = await c.req.json<ChatCompletionsPayload>()
 
   state.requestQueue.push({ payload, promise })
 

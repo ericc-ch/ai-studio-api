@@ -29,7 +29,7 @@ export const createChatCompletions = async (
   await clearChat(page)
 
   await selectModel(payload.model)
-  await enableJSON(page)
+  if (state.json) await enableJSON(page)
   await setTemperature(page, payload.temperature ?? 1)
   await sendMessage(page, formattedMessage)
 

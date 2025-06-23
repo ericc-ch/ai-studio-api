@@ -13,6 +13,7 @@ const parseModel = (data: string) => {
   return { label, name }
 }
 
+// eslint-disable-next-line max-lines-per-function
 export async function getModels() {
   const { page } = state
   invariant(page, "Browser page is not initialized")
@@ -28,10 +29,11 @@ export async function getModels() {
     .filter((item): item is string => item !== null)
   const models = modelText.map((element) => parseModel(element))
 
+  const now = new Date()
+
   const expected: ExpectedModels = {
     object: "list",
     data: models.map((model) => {
-      const now = new Date()
       return {
         id: model.name,
         object: "model",
@@ -44,6 +46,28 @@ export async function getModels() {
     }),
     has_more: false,
   }
+
+  if (state.geminiApiKey)
+    expected.data.push(
+      {
+        id: "proxy-gemini-2.5-flash",
+        object: "model",
+        type: "model",
+        created: Math.floor(now.getTime() / 1000),
+        created_at: now.toISOString(),
+        owned_by: "google",
+        display_name: "Gemini 2.5 Flash",
+      },
+      {
+        id: "proxy-gemini-2.5-flash-lite-preview-06-17",
+        object: "model",
+        type: "model",
+        created: Math.floor(now.getTime() / 1000),
+        created_at: now.toISOString(),
+        owned_by: "google",
+        display_name: "Gemini 2.5 Flash Lite Preview 06-17",
+      },
+    )
 
   const modelOption = page.locator("mat-option").first()
   await modelOption.click()

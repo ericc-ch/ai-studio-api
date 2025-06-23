@@ -43,6 +43,12 @@ To handle multiple incoming requests sequentially and manage interactions with t
 
 The server then formats this extracted response to match the OpenAI API specification (e.g., for chat completions or streaming chunks) and returns it to the client. This entire process programmatically mimics how a human user would interact with AI Studio, effectively creating an API wrapper around the web UI.
 
+## Proxy Models
+
+In addition to interacting with Google AI Studio through browser automation, this server can also act as a proxy to the official Gemini API. This is useful for accessing models that may not be available in the AI Studio UI or for getting faster, more reliable responses.
+
+When you provide a Gemini API key using the `--gemini-api-key` command-line option, the server will list additional models prefixed with `proxy-` (e.g., `proxy-gemini-2.5-flash`). When you make a request using one of these proxy models, the server forwards the request directly to the Gemini API instead of processing it through the browser. This bypasses the browser automation entirely for that request.
+
 ## API Endpoints
 
 The server exposes the following OpenAI-compatible endpoints:
@@ -70,15 +76,18 @@ pnpm install
 
 The following command line options are available:
 
-| Option          | Description                                  | Default    | Alias |
-| --------------- | -------------------------------------------- | ---------- | ----- |
-| --port          | Port to listen on                            | 4157       | -p    |
-| --verbose       | Enable verbose logging                       | false      | -v    |
-| --manual        | Enable manual request approval               | false      | none  |
-| --rate-limit    | Rate limit in seconds between requests       | none       | -r    |
-| --wait          | Wait instead of error when rate limit is hit | false      | -w    |
-| --browser-path  | Path to the browser executable               | `chromium` | none  |
-| --browser-delay | Delay in ms after launching the browser      | 5000       | none  |
+| Option             | Description                                                                          | Default    | Alias |
+| ------------------ | ------------------------------------------------------------------------------------ | ---------- | ----- |
+| --port             | Port to listen on                                                                    | `4157`     | -p    |
+| --verbose          | Enable verbose logging                                                               | false      | -v    |
+| --manual           | Enable manual request approval                                                       | false      | none  |
+| --json             | Use JSON mode in AI response, making it easier to parse                              | false      | -j    |
+| --gemini-api-key   | Set Gemini API key for proxied requests                                              | none       | none  |
+| --rate-limit       | Rate limit in seconds between requests                                               | none       | -r    |
+| --claude-code      | Generate a command to launch Claude Code with the server config                      | false      | -c    |
+| --wait             | Wait instead of error when rate limit is hit. Has no effect if rate limit is not set | false      | -w    |
+| --browser-path     | Path to the browser executable                                                       | `chromium` | none  |
+| --browser-delay    | Delay in ms after launching the browser                                              | `5000`     | none  |
 
 Example usage:
 
@@ -94,6 +103,9 @@ pnpm run dev --rate-limit 30
 
 # Wait instead of error when rate limit is hit
 pnpm run dev --rate-limit 30 --wait
+
+# Use a Gemini API key to enable proxy models
+pnpm run dev --gemini-api-key "YOUR_API_KEY"
 
 # Use a different browser executable
 pnpm run dev --browser-path /usr/bin/google-chrome

@@ -111,6 +111,7 @@ export async function handleMessages(c: Context) {
       : anthropicPayload.system.map((s) => s.text).join("\n")
 
     if (RESPONSE_MAP.has(systemContent)) {
+      consola.debug("Cache hit on system message, using fake response")
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const responseGenerator = RESPONSE_MAP.get(systemContent)!
       const content = responseGenerator()
@@ -161,6 +162,8 @@ export async function handleMessages(c: Context) {
       ...openAIPayload,
       model: openAIPayload.model.replace("proxy-", ""),
     }
+
+    consola.debug("Proxying body:", JSON.stringify(body).slice(-400))
 
     return proxy(geminiUrl, {
       method: c.req.method,

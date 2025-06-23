@@ -30,6 +30,7 @@ export async function handleChatCompletion(c: Context) {
     && typeof systemMessage.content === "string"
     && RESPONSE_MAP.has(systemMessage.content)
   ) {
+    consola.debug("Cache hit on system message, using fake response")
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const responseGenerator = RESPONSE_MAP.get(systemMessage.content)!
     const content = responseGenerator()
@@ -66,6 +67,8 @@ export async function handleChatCompletion(c: Context) {
       ...payload,
       model: payload.model.replace("proxy-", ""),
     }
+
+    consola.debug("Proxying body:", JSON.stringify(body).slice(-400))
 
     return proxy(geminiUrl, {
       method: c.req.method,

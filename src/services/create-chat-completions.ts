@@ -450,6 +450,111 @@ function buildToolCallStreamingResponse(
   return allChunks
 }
 
+// eslint-disable-next-line max-lines-per-function
+export function buildFakeStreamingResponse(
+  model: string,
+  content: string,
+): Array<ChatCompletionChunk> {
+  consola.debug("Building fake streaming response")
+
+  const stringChunks = fakeChunk(content)
+  const randomId = crypto.randomUUID()
+  const now = Math.floor(Date.now() / 1000)
+  const system_fingerprint = "fp_mock_fingerprint"
+
+  const initialChunk: ChatCompletionChunk = {
+    id: randomId,
+    object: "chat.completion.chunk",
+    created: now,
+    model: model,
+    system_fingerprint,
+    choices: [
+      {
+        index: 0,
+        delta: { role: "assistant" },
+        logprobs: null,
+        finish_reason: null,
+      },
+    ],
+  }
+
+  const completionChunks: Array<ChatCompletionChunk> = stringChunks.map(
+    (chunk) => ({
+      id: randomId,
+      object: "chat.completion.chunk",
+      created: now,
+      model: model,
+      system_fingerprint,
+      choices: [
+        {
+          delta: { content: chunk },
+          index: 0,
+          finish_reason: null,
+          logprobs: null,
+        },
+      ],
+    }),
+  )
+
+  const finalChunk: ChatCompletionChunk = {
+    id: randomId,
+    object: "chat.completion.chunk",
+    created: now,
+    model: model,
+    system_fingerprint,
+    choices: [
+      {
+        index: 0,
+        delta: {},
+        logprobs: null,
+        finish_reason: "stop",
+      },
+    ],
+  }
+
+  const allChunks = [initialChunk, ...completionChunks, finalChunk]
+
+  consola.debug(`Fake streaming response built: ${allChunks.length} chunks`)
+  return allChunks
+}
+
+export function buildFakeNonStreamingResponse(
+  model: string,
+  content: string,
+): ChatCompletionResponse {
+  consola.debug("Building fake non-streaming response")
+
+  const response: ChatCompletionResponse = {
+    id: crypto.randomUUID(),
+    object: "chat.completion",
+    created: Math.floor(Date.now() / 1000),
+    model: model,
+    choices: [
+      {
+        finish_reason: "stop",
+        index: 0,
+        logprobs: null,
+        message: {
+          content: content,
+          role: "assistant",
+        },
+      },
+    ],
+    system_fingerprint: "fp_mock_fingerprint",
+    usage: {
+      prompt_tokens: 0, // MOCKED
+      completion_tokens: 0, // MOCKED
+      total_tokens: 0, // MOCKED
+    },
+  }
+
+  consola.debug(
+    "Fake non-streaming response built:",
+    `${response.choices[0].message.content?.slice(-50)} (Last 50 characters)`,
+  )
+  return response
+}
+
 function fakeChunk(content: string) {
   const chunks: Array<string> = []
   if (!content) {

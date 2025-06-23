@@ -9,14 +9,45 @@ import type {
   ChatCompletionsPayload,
 } from "~/services/types"
 
+import { RESPONSE_MAP } from "~/lib/cache"
 import { state } from "~/lib/state"
 import { awaitApproval } from "~/lib/utils"
-import { createChatCompletions } from "~/services/create-chat-completions"
+import {
+  buildFakeNonStreamingResponse,
+  buildFakeStreamingResponse,
+  createChatCompletions,
+} from "~/services/create-chat-completions"
 
+// eslint-disable-next-line max-lines-per-function
 export async function handleChatCompletion(c: Context) {
   if (state.manualApprove) await awaitApproval()
 
   const payload = await c.req.json<ChatCompletionsPayload>()
+
+  const systemMessage = payload.messages.find((m) => m.role === "system")
+  if (
+    systemMessage
+    && typeof systemMessage.content === "string"
+    && RESPONSE_MAP.has(systemMessage.content)
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const responseGenerator = RESPONSE_MAP.get(systemMessage.content)!
+    const content = responseGenerator()
+
+    if (payload.stream) {
+      const chunks = buildFakeStreamingResponse(payload.model, content)
+      return streamSSE(c, async (stream) => {
+        for (const chunk of chunks) {
+          await stream.writeSSE({
+            data: JSON.stringify(chunk),
+          })
+        }
+      })
+    }
+
+    const response = buildFakeNonStreamingResponse(payload.model, content)
+    return c.json(response)
+  }
 
   if (payload.model.startsWith("proxy-")) {
     const geminiUrl =
@@ -24,7 +55,7 @@ export async function handleChatCompletion(c: Context) {
 
     consola.debug(`Proxying request for ${payload.model} to ${geminiUrl}`)
 
-    const headers = {
+    const headers: Record<string, string> = {
       ...c.req.header(),
       Authorization: `Bearer ${state.geminiApiKey}`,
     }

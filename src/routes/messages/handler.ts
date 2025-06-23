@@ -6,9 +6,14 @@ import { streamSSE } from "hono/streaming"
 
 import type { ChatCompletionResponse } from "~/services/types"
 
+import { RESPONSE_MAP } from "~/lib/cache"
 import { state } from "~/lib/state"
 import { awaitApproval } from "~/lib/utils"
-import { createChatCompletions } from "~/services/create-chat-completions"
+import {
+  buildFakeNonStreamingResponse,
+  buildFakeStreamingResponse,
+  createChatCompletions,
+} from "~/services/create-chat-completions"
 
 import {
   type AnthropicMessagesPayload,
@@ -87,6 +92,7 @@ async function handleNonStreamingResponse(
   consola.error("Received a streaming response for a non-streaming request.")
 }
 
+// eslint-disable-next-line max-lines-per-function
 export async function handleMessages(c: Context) {
   if (state.manualApprove) {
     await awaitApproval()
@@ -97,6 +103,40 @@ export async function handleMessages(c: Context) {
     "Anthropic request payload:",
     JSON.stringify(anthropicPayload).slice(-400),
   )
+
+  if (anthropicPayload.system) {
+    const systemContent =
+      typeof anthropicPayload.system === "string" ?
+        anthropicPayload.system
+      : anthropicPayload.system.map((s) => s.text).join("\n")
+
+    if (RESPONSE_MAP.has(systemContent)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const responseGenerator = RESPONSE_MAP.get(systemContent)!
+      const content = responseGenerator()
+
+      const promise =
+        Promise.withResolvers<
+          Awaited<ReturnType<typeof createChatCompletions>>
+        >()
+
+      if (anthropicPayload.stream) {
+        const chunks = buildFakeStreamingResponse(
+          anthropicPayload.model,
+          content,
+        )
+        promise.resolve(chunks)
+        return handleStreamingResponse(c, promise)
+      }
+
+      const response = buildFakeNonStreamingResponse(
+        anthropicPayload.model,
+        content,
+      )
+      promise.resolve(response)
+      return handleNonStreamingResponse(c, promise)
+    }
+  }
 
   const openAIPayload = translateToOpenAI(anthropicPayload)
   consola.debug(
@@ -110,7 +150,7 @@ export async function handleMessages(c: Context) {
 
     consola.debug(`Proxying request for ${openAIPayload.model} to ${geminiUrl}`)
 
-    const headers = {
+    const headers: Record<string, string> = {
       ...c.req.header(),
       Authorization: `Bearer ${state.geminiApiKey}`,
     }

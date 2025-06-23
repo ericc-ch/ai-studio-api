@@ -14,6 +14,7 @@ export interface State {
 
   manualApprove: boolean
   rateLimitWait: boolean
+  json: boolean
 
   // Rate limiting configuration
   rateLimitSeconds?: number
@@ -31,5 +32,6 @@ export interface State {
 export const state: State = {
   manualApprove: false,
   rateLimitWait: false,
+  json: false,
   requestQueue: [],
 }

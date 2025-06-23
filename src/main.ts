@@ -17,6 +17,7 @@ interface RunServerOptions {
   port: number
   verbose: boolean
   manual: boolean
+  json: boolean
   rateLimit: number | undefined
   rateLimitWait: boolean
   browserPath: string
@@ -39,6 +40,9 @@ export async function runServer(options: RunServerOptions): Promise<void> {
 
   state.manualApprove = options.manual
   consola.debug(`Manual approval: ${state.manualApprove}`)
+
+  state.json = options.json
+  consola.debug(`JSON mode: ${state.json}`)
 
   state.rateLimitSeconds = options.rateLimit
   consola.debug(`Rate limit seconds: ${state.rateLimitSeconds}`)
@@ -115,6 +119,12 @@ const main = defineCommand({
       default: false,
       description: "Enable manual request approval",
     },
+    json: {
+      alias: "j",
+      type: "boolean",
+      default: false,
+      description: "Use JSON mode in AI response, making it easier to parse",
+    },
     "rate-limit": {
       alias: "r",
       type: "string",
@@ -158,6 +168,7 @@ const main = defineCommand({
 
     consola.debug(`Verbose arg: ${args.verbose}`)
     consola.debug(`Manual arg: ${args.manual}`)
+    consola.debug(`JSON arg: ${args.json}`)
     consola.debug(`Wait arg: ${args.wait}`)
     consola.debug(`Claude Code arg: ${args["claude-code"]}`)
 
@@ -171,6 +182,7 @@ const main = defineCommand({
       port,
       verbose: args.verbose,
       manual: args.manual,
+      json: args.json,
       rateLimit,
       rateLimitWait: Boolean(args.wait),
       browserPath,

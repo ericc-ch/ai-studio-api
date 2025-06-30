@@ -92,7 +92,6 @@ async function handleNonStreamingResponse(
   consola.error("Received a streaming response for a non-streaming request.")
 }
 
-// eslint-disable-next-line max-lines-per-function
 export async function handleMessages(c: Context) {
   if (state.manualApprove) {
     await awaitApproval()

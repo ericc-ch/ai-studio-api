@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import type { Locator, Page } from "playwright"
 
 import consola from "consola"
@@ -195,7 +194,6 @@ function parseToolCalls(
   }
 }
 
-// eslint-disable-next-line max-lines-per-function
 const buildNonStreamingResponse = (
   payload: ChatCompletionsPayload,
   result: string,
@@ -259,7 +257,6 @@ const buildNonStreamingResponse = (
   return response
 }
 
-// eslint-disable-next-line max-lines-per-function
 const buildStreamingResponse = (
   payload: ChatCompletionsPayload,
   result: string,
@@ -346,7 +343,6 @@ const buildStreamingResponse = (
   return allChunks
 }
 
-// eslint-disable-next-line max-lines-per-function
 function buildToolCallStreamingResponse(
   payload: ChatCompletionsPayload,
   tool_calls: Array<ToolCall>,
@@ -450,7 +446,6 @@ function buildToolCallStreamingResponse(
   return allChunks
 }
 
-// eslint-disable-next-line max-lines-per-function
 export function buildFakeStreamingResponse(
   model: string,
   content: string,

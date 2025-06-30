@@ -18,7 +18,6 @@ import {
   createChatCompletions,
 } from "~/services/create-chat-completions"
 
-// eslint-disable-next-line max-lines-per-function
 export async function handleChatCompletion(c: Context) {
   if (state.manualApprove) await awaitApproval()
 

@@ -110,7 +110,6 @@ Parameters (JSON Schema): ${params}
   return toolStrings.join("\n\n")
 }
 
-// eslint-disable-next-line max-lines-per-function
 export const buildPrompt = (messages: Array<Message>, tools?: Array<Tool>) => {
   if (state.json) {
     return buildJsonPrompt(messages, tools)

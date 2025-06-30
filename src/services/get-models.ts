@@ -13,7 +13,6 @@ const parseModel = (data: string) => {
   return { label, name }
 }
 
-// eslint-disable-next-line max-lines-per-function
 export async function getModels() {
   const { page } = state
   invariant(page, "Browser page is not initialized")
